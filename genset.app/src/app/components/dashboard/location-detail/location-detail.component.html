@@ -1,0 +1,249 @@
+<section class="content-header">
+    <h1 (click)="clickBack()" style="cursor:pointer">
+        <img class="mr-1 mb-1" src="../../../../assets/images/back-arrow-icon.svg" />
+        {{locationname}}
+    </h1>
+</section>
+<mat-tab-group animationDuration="0ms" class="asp-tab-style">
+    <mat-tab label="Insight & Statistics">
+        <ng-template matTabContent>
+            <div class="dashboardtop-widget locationtop-widget">
+
+                <div class="dashboard-chart topwidget-2">
+                    <div class="dashboard-chart-item">
+                        <div class="topwidget-icon"><img src="../../../../assets/images/icon-generator.svg"></div>
+                        <p>Total <br />Generators</p>
+                        <div class="connected-disconnected-wrapper">
+                            <div class="connected-disconnected-item connected">
+                                <div class="connected-disconnected-tile">Connected</div>
+                                <div class="connected-disconnected-data-wrapper">
+                                    <div class="connected-disconnected-data-item">
+                                        <div class="connected-disconnected-data text-green">
+                                            {{totalOnConnectedGenerators? totalOnConnectedGenerators : 'N/A'}}</div>
+                                        <div class="connected-disconnected-desc">On</div>
+                                    </div>
+                                    <div class="connected-disconnected-data-item">
+                                        <div class="connected-disconnected-data text-red">
+                                            {{totalOffGenerators ? totalOffGenerators : 'N/A' }}</div>
+                                        <div class="connected-disconnected-desc">off</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="connected-disconnected-item disconnected">
+                                <div class="connected-disconnected-tile">Disconnected</div>
+                                <div class="connected-disconnected-data-wrapper">
+                                    <div class="connected-disconnected-data-item">
+                                        <div class="connected-disconnected-data text-red">
+                                            {{totalDisconnectedGenerators ? totalDisconnectedGenerators : 'N/A' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-chart topwidget-3">
+                    <div class="dashboard-chart-item">
+                        <div class="topwidget-icon"><img src="../../../../assets/images/icon-energy.svg"></div>
+                        <p>Total Energy <br /> Generated (kWh) (Today)</p>
+                        <h4>{{totalEneryGenerated ? totalEneryGenerated: 'N/A' }}</h4>
+                    </div>
+                </div>
+                <div class="dashboard-chart topwidget-4">
+                    <div class="dashboard-chart-item">
+                        <div class="topwidget-icon"><img src="../../../../assets/images/icon-fuel.svg"></div>
+                        <p>Total Fuel <br /> Used (Gal) (Today)</p>
+                        <h4>{{totalFuelUsed ? totalFuelUsed : 'N/A' }}</h4>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-xl-8 m-b-30">
+                    <div class="drag-body dashboard-widget">
+                        <div class="panel-heading">
+                            <h5 class="panel-title"> Energy Generated </h5>
+                        </div>
+                        <mat-card class="dashboard-card mat-card">
+                            <!-- <img style="height: 300px;" src="../../../../assets/images/bar-graph-lg-2.jpg"  /> -->
+                            <google-chart *ngIf="chart['energyConsumption']['dataTable'].length" #cchart
+                                [data]="chart['energyConsumption']"></google-chart>
+                            <div *ngIf="!chart['energyConsumption']['dataTable'].length"
+                                class="text-center d-flex align-items-center justify-content-center"
+                                style="height: 300px;">
+                                No data found
+                            </div>
+                        </mat-card>
+                    </div>
+                    <div class="drag-body dashboard-widget">
+                        <div class="panel-heading">
+                            <h5 class="panel-title">Fuel Used </h5>
+                        </div>
+                        <mat-card class="dashboard-card mat-card">
+                            <!-- <img style="height: 300px;" src="../../../../assets/images/bar-graph-lg-2.jpg"  /> -->
+                            <google-chart *ngIf="chart['fuelUsage']['dataTable'].length" #cchart
+                                [data]="chart['fuelUsage']"></google-chart>
+                            <div *ngIf="!chart['fuelUsage']['dataTable'].length"
+                                class="text-center d-flex align-items-center justify-content-center"
+                                style="height: 300px;">
+                                No data found
+                            </div>
+                        </mat-card>
+                    </div>
+                </div>
+                <div class="col-xl-4 m-b-30">
+                    <div class="drag-body dashboard-widget">
+                        <div class="panel-heading">
+                            <h5 class="panel-title">Generator Battery Status </h5>
+                        </div>
+                        <mat-card class="dashboard-card mat-card">
+                            <!-- <img style="height: 300px;" src="../../../../assets/images/bar-graph-lg-2.jpg"  /> -->
+                            <google-chart *ngIf="chart['generaytorBatteryStatus']['dataTable'].length" #cchart
+                                [data]="chart['generaytorBatteryStatus']"></google-chart>
+                            <div *ngIf="!chart['generaytorBatteryStatus']['dataTable'].length"
+                                class="text-center d-flex align-items-center justify-content-center"
+                                style="height: 300px;">
+                                No data found
+                            </div>
+                        </mat-card>
+                    </div>
+                    <div class="drag-body dashboard-widget">
+                        <div class="panel-heading">
+                            <h5 class="panel-title">Generator Usage Break up in 24hrs </h5>
+                        </div>
+                        <mat-card class="dashboard-card mat-card">
+                            <!-- <img style="height: 300px;" src="../../../../assets/images/bar-graph-lg-2.jpg"  /> -->
+                            <google-chart *ngIf="chart['generatorUsage']['dataTable'].length" #cchart
+                                [data]="chart['generatorUsage']"></google-chart>
+                            <div *ngIf="!chart['generatorUsage']['dataTable'].length"
+                                class="text-center d-flex align-items-center justify-content-center"
+                                style="height: 300px;">
+                                No data found
+                            </div>
+                        </mat-card>
+                    </div>
+
+
+                </div>
+            </div>
+        </ng-template>
+    </mat-tab>
+    <mat-tab label="Alerts">
+        <ng-template matTabContent>
+            <div class="panel-heading">
+                <div style="text-align: right;" class="tab-link-bar">
+                    <a [routerLink]="['/alerts']" [queryParams]="{locationGuid:locationGuid}"
+                        href="javascript:;">View All</a>
+                </div>
+            </div>
+            <div class="drag-body dashboard-widget">
+                <mat-card class="dashboard-card mat-card pt-0">
+                    <ul style="min-height: 813px;" class="alerts-dashboard max-height-initial">
+                        <li *ngFor="let alert of alerts" class="alert-{{alert['severity']}}">
+                            <span class="alerts-date">{{alert['eventDate'] | date:'M/d/yy, h:mm:ss a'}}</span>
+                            <span class="alerts-info">{{alert['message']}}</span>
+                        </li>
+                        <div *ngIf="!alerts.length" class="centerclass">No records found</div>
+                    </ul>
+
+                    <div class="alert-indicator-wrapper">
+                        <div class="alert-indicator-list">
+                            <div class="alert-indicator bg-critical">
+                                <span class="legend"></span>
+                                <span class="alert-text">Critical</span>
+                            </div>
+                            <div class="alert-indicator bg-information">
+                                <span class="legend"></span>
+                                <span class="alert-text">Information</span>
+                            </div>
+                            <div class="alert-indicator bg-major">
+                                <span class="legend"></span>
+                                <span class="alert-text">Major</span>
+                            </div>
+                            <div class="alert-indicator bg-minor">
+                                <span class="legend"></span>
+                                <span class="alert-text">Minor</span>
+                            </div>
+                            <div class="alert-indicator bg-warningg">
+                                <span class="legend"></span>
+                                <span class="alert-text">Warning</span>
+                            </div>
+                        </div>
+                    </div>
+                </mat-card>
+            </div>
+        </ng-template>
+    </mat-tab>
+    <mat-tab label="Generators">
+        <ng-template matTabContent>
+            <div class="map-list-wrapper">
+                <section class="content-header p-t-10">
+                    <div class="ml-auto content-header-action">
+                        <form>
+                            <div class="instance-status-details m-r-20">
+                                <div class="instance-status-box d-flex flex-wrap align-items-center">
+                                    <div class="col">
+                                        <div class="instance-status-info"><span
+                                                class="user-status-type status-green">Active</span></div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="instance-status-info"><span
+                                                class="user-status-type status-red">Inactive</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <mat-form-field class="example-full-width">
+                                    <input class="search" matInput placeholder="Search" autocomplete="off" value="">
+                                    <button type="button" matSuffix mat-button class="search-btn">
+                                        <img src="../../../assets/images/search-icon.svg" alt="">
+                                    </button>
+                                </mat-form-field>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+                <div class="row">
+                    <div class="col-ld-3 col-lg-6 col-xl-4 m-b-30" *ngFor="let generatordata of generators">
+                        <div class="user-grid-box">
+                            <div class="user-status-indicator status-green"></div>
+                            <div class="grid-inner-flex d-flex align-items-center">
+                                <div class="user-image-box">
+                                    <img src="../../../assets/images/location-circle-icon.png" class="img-fluid" alt="">
+                                </div>
+                                <div class="user-detail-box">
+                                    <!-- <h3 class="user-name"><a routerLink="/location-detail">{{generatordata.name}}</a></h3> -->
+                                    <h3 class="user-name"><a
+                                            [routerLink]="['/generatordetails/'+generatordata.guid]">{{generatordata.name}}</a>
+                                    </h3>
+                                    <p class="user-details">Name <span> {{generatordata.name}}</span></p>
+                                    <p class="user-details">Type <span> {{generatordata.type}}</span></p>
+                                </div>
+                            </div>
+                            <div class="user-actions d-flex flex-wrap">
+                                <!-- <div class="user-actions-cta text-center">
+                            <a href="javascript:;"
+                            title="Edit">
+                            <img src="../../../assets/images/icon-edit.svg" alt="Edit" [routerLink]="['/generator',generatordata.guid]">
+                            </a>
+                        </div>
+                        <div class="user-actions-cta text-center">
+                            <a href="javascript:void(0);"
+                                title="View">
+                            <img src="../../../assets/images/view-user.svg" alt="Delete">
+                            </a>
+                        </div> 
+                        <div class="user-actions-cta text-center">
+                            <a href="javascript:void(0);" 
+                            title="Delete">
+                            <img src="../../../assets/images/icon-delete.svg" (click)="deleteModel(generatordata)" alt="Delete">
+                            </a>
+                        </div> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-template>
+    </mat-tab>
+</mat-tab-group>

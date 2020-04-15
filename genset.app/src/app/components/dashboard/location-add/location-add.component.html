@@ -1,0 +1,234 @@
+<!-- Content Header (Page header) -->
+
+<section class="content-header">
+	<h1>{{moduleName}}</h1>
+</section>
+<!-- Main content -->
+
+<section class="content">
+	<mat-card class="support-card">
+		<div class="row">
+			<div class="col col-ld-11">
+				<form [formGroup]="locationForm" (ngSubmit)="addLocation()" autocomplete="off"
+					class="form-horizontal common-form">
+					<div class="row">
+						<div class="col-md-6">
+							<fieldset class="form-group form-field">
+								<label class="form-label">Name<b>*</b></label>
+								<mat-form-field>
+									<input matInput name="name" formControlName="name" type="text" maxlength="60"
+										[(ngModel)]="locationObject['name']" class="form-control" tabindex="1"
+										placeholder="Name">
+									<div class="form-control-feedback" *ngIf="locationForm.controls['name'].errors">
+										<p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+											*ngIf="locationForm.controls['name'].errors.required && checkSubmitStatus">
+											Please enter Name
+										</p>
+									</div>
+								</mat-form-field>
+							</fieldset>
+						</div>
+						<div class="col-md-6">
+							<fieldset class="form-group form-field">
+								<label class="form-label">Description</label>
+								<mat-form-field>
+									<textarea matInput rows="3" maxlength="260" class="form-control"
+										formControlName="description" placeholder="Description" name="description"
+										[(ngModel)]="locationObject['description']" tabindex="2"></textarea>
+								</mat-form-field>
+							</fieldset>
+						</div>
+
+					</div>
+
+					<div class="row">
+						<div class="col-md-6">
+							<fieldset class="form-group form-field">
+								<label class="form-label">Country<b>*</b></label>
+								<ng-select [searchable]="locationForm.controls.countryGuid.value?false:true"
+									class="custom" [selectOnTab]="true"
+									[placeholder]="locationForm.controls.countryGuid.value?'':'Country'"
+									formControlName="countryGuid" [items]="countryList" (change)="getstate($event.value)"
+									bindLabel="text" bindValue="value" [(ngModel)]="locationObject['countryGuid']">
+								</ng-select>
+								<div class="form-control-feedback custom" *ngIf="locationForm.controls['countryGuid'].errors">
+									<p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+										*ngIf="locationForm.controls['countryGuid'].errors.required && checkSubmitStatus">
+										Please select Country
+									</p>
+								</div>
+
+								<!-- <mat-form-field>
+									<mat-select placeholder="Select Country" formControlName="countryGuid"
+										(selectionChange)="getstate($event.value)"
+										[(ngModel)]="locationObject['countryGuid']" tabindex="3">
+										<mat-option *ngFor="let country of countryList" [value]="country?.countryId">
+											{{country.countryName}}
+										</mat-option>
+									</mat-select>
+									<div class="form-control-feedback"
+										*ngIf="locationForm.controls['countryGuid'].errors">
+										<p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+											*ngIf="locationForm.controls['countryGuid'].errors.required && checkSubmitStatus">
+											Please select a Country
+										</p>
+									</div>
+								</mat-form-field> -->
+							</fieldset>
+						</div>
+						<div class="col-md-6">
+							<fieldset class="form-group form-field">
+								<label class="form-label">State<b>*</b></label>
+								<ng-select [searchable]="locationForm.controls.stateGuid.value?false:true"
+									class="custom" [selectOnTab]="true"
+									[placeholder]="locationForm.controls.stateGuid.value?'':'State'"
+									formControlName="stateGuid" [items]="stateList" 
+									bindLabel="text" bindValue="value" [(ngModel)]="locationObject['stateGuid']">
+								</ng-select>
+								<div class="form-control-feedback custom"
+										*ngIf="locationForm.controls['stateGuid'].errors">
+										<p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+											*ngIf="locationForm.controls['stateGuid'].errors.required && checkSubmitStatus">
+											Please select State
+										</p>
+									</div>
+
+								<!-- <mat-form-field>
+									<mat-select placeholder="Select State" formControlName="stateGuid"
+										[(ngModel)]="locationObject['stateGuid']" tabindex="4">
+										<mat-option *ngFor="let state of stateList" [value]="state?.stateId">
+											{{state.stateName}}
+										</mat-option>
+									</mat-select>
+									<div class="form-control-feedback"
+										*ngIf="locationForm.controls['stateGuid'].errors">
+										<p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+											*ngIf="locationForm.controls['stateGuid'].errors.required && checkSubmitStatus">
+											Please select a State
+										</p>
+									</div>
+								</mat-form-field> -->
+							</fieldset>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<fieldset class="form-group form-field">
+								<label class="form-label">City<b>*</b></label>
+								<mat-form-field>
+									<input matInput name="city" autocomplete="new-password" maxlength="30" formControlName="city" type="text"
+										[(ngModel)]="locationObject['city']" class="form-control" tabindex="5"
+										placeholder="City">
+									<div class="form-control-feedback" *ngIf="locationForm.controls['city'].errors">
+										<p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+											*ngIf="locationForm.controls['city'].errors.required && checkSubmitStatus">
+											Please enter City
+										</p>
+									</div>
+								</mat-form-field>
+							</fieldset>
+						</div>
+						<div class="col-md-6">
+							<fieldset class="form-group form-field">
+								<label class="form-label">Zip Code<b>*</b></label>
+								<mat-form-field>
+									<input matInput name="zipcode" maxlength="6" formControlName="zipcode" type="text"
+										[(ngModel)]="locationObject['zipcode']" class="form-control" tabindex="6"
+										placeholder="Zip Code">
+									<div class="form-control-feedback" *ngIf="locationForm.controls['zipcode'].errors">
+										<p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+											*ngIf="locationForm.controls['zipcode'].errors.required && checkSubmitStatus">
+											Please enter Zip Code
+										</p>
+										<p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+										*ngIf="locationForm.controls['zipcode'].errors.pattern && checkSubmitStatus">
+									   Please enter valid Zip Code
+									 </p>
+									</div>
+								</mat-form-field>
+							</fieldset>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<fieldset class="form-group form-field">
+								<label class="form-label">Latitude<b>*</b></label>
+								<mat-form-field>
+									<input matInput maxlength="20" name="latitude" formControlName="latitude"
+										type="text" [(ngModel)]="locationObject['latitude']" class="form-control"
+										tabindex="7" placeholder="Latitude">
+									<div class="form-control-feedback" *ngIf="locationForm.controls['latitude'].errors">
+										<p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+											*ngIf="locationForm.controls['latitude'].errors.required && checkSubmitStatus">
+											Please enter Latitude
+										</p>
+										<p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+										*ngIf="locationForm.controls['latitude'].errors.pattern && checkSubmitStatus">
+									   Please enter valid Latitude
+									 </p>
+									</div>
+								</mat-form-field>
+							</fieldset>
+						</div>
+						<div class="col-md-6">
+							<fieldset class="form-group form-field">
+								<label class="form-label">Longitude<b>*</b></label>
+								<mat-form-field>
+									<input matInput maxlength="20" name="longitude" formControlName="longitude"
+										type="text" [(ngModel)]="locationObject['longitude']" class="form-control"
+										tabindex="8" placeholder="Longitude">
+									<div class="form-control-feedback"
+										*ngIf="locationForm.controls['longitude'].errors">
+										<p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+											*ngIf="locationForm.controls['longitude'].errors.required && checkSubmitStatus">
+											Please enter Longitude
+										</p>
+										<p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+										*ngIf="locationForm.controls['longitude'].errors.pattern && checkSubmitStatus">
+									   Please enter valid Longitude
+									 </p>
+									</div>
+								</mat-form-field>
+							</fieldset>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-6">
+							<fieldset class="form-group form-field">
+								<label class="form-label">Address</label>
+								<mat-form-field>
+									<textarea matInput rows="3" maxlength="260" class="form-control"
+										formControlName="address" placeholder="Address" name="address"
+										[(ngModel)]="locationObject['address']" tabindex="9"></textarea>
+								</mat-form-field>
+							</fieldset>
+						</div>
+						<div class="col-md-6">
+							<fieldset class="form-group form-field">
+								<label class="form-label">Address2</label>
+								<mat-form-field>
+									<textarea matInput rows="3" maxlength="260" class="form-control"
+										formControlName="address2" placeholder="Address2" name="address2"
+										[(ngModel)]="locationObject['address2']" tabindex="10"></textarea>
+								</mat-form-field>
+							</fieldset>
+						</div>
+					</div>
+					<div class="row mt-4 mb-0">
+						<div class="col-lg-12">
+							<div class="form-field">
+								<div class="input-field ">
+									<button mat-flat-button color="primary" class="text-white " title="Submit"
+										type="submit">Submit</button>
+									<button mat-flat-button color="primary" class="text-white m-l-10"
+										type="button" (click)="location.back()" title="Cancel">Cancel</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</mat-card>
+</section>

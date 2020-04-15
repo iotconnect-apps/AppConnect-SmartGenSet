@@ -1,0 +1,228 @@
+<section class="content-header">
+	<h1>Dashboard</h1>
+</section>
+
+<div class="main-page dashboard">
+	<div class="dashboardtop-widget">
+		<div class="dashboard-chart  topwidget-1">
+			<div class="dashboard-chart-item">
+				<div class="topwidget-icon"><img src="../../../../assets/images/icon-location.svg"></div>
+				<p>Total <br />Locations</p>
+				<h4>{{totalLocations}}</h4>
+			</div>
+		</div>
+		<div class="dashboard-chart topwidget-2">
+			<div class="dashboard-chart-item">
+				<div class="topwidget-icon"><img src="../../../../assets/images/icon-generator.svg"></div>
+				<p>Total <br />Generators</p>
+				<div class="connected-disconnected-wrapper">
+					<div class="connected-disconnected-item connected">
+						<div class="connected-disconnected-tile">Connected</div>
+						<div class="connected-disconnected-data-wrapper">
+							<div class="connected-disconnected-data-item">
+								<div class="connected-disconnected-data text-green">{{totalOnGenerators}}</div>
+								<div class="connected-disconnected-desc">On</div>
+							</div>
+							<div class="connected-disconnected-data-item">
+								<div class="connected-disconnected-data text-red">{{totalOffGenerators}}</div>
+								<div class="connected-disconnected-desc">off</div>
+							</div>
+						</div>
+					</div>
+					<div class="connected-disconnected-item disconnected">
+						<div class="connected-disconnected-tile">Disconnected</div>
+						<div class="connected-disconnected-data-wrapper">
+							<div class="connected-disconnected-data-item">
+								<div class="connected-disconnected-data text-red">{{totalDisconnectedGenerators}}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="dashboard-chart topwidget-3">
+			<div class="dashboard-chart-item">
+				<div class="topwidget-icon"><img src="../../../../assets/images/icon-energy.svg"></div>
+				<p>Total Energy <br /> Generated (kWh) (Today)</p>
+				<h4>{{totalEneryGenerated}}</h4>
+			</div>
+		</div>
+		<div class="dashboard-chart topwidget-4">
+			<div class="dashboard-chart-item">
+				<div class="topwidget-icon"><img src="../../../../assets/images/icon-fuel.svg"></div>
+				<p>Total Fuel <br /> Used (Gal) (Today)</p>
+				<h4>{{totalFuelUsed}}</h4>
+			</div>
+		</div>
+		<div class="dashboard-chart topwidget-5">
+			<div class="dashboard-chart-item">
+				<div class="topwidget-icon"><img src="../../../../assets/images/icon-alert.svg"></div>
+				<p>Total Alerts</p>
+				<h4>{{totalAlerts}}</h4>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-xl-8  m-b-30">
+			<div class="drag-body dashboard-widget h-100">
+				<div class="panel-heading">
+					<h5 class="panel-title"> Locations </h5>
+					<div class="mr-3">
+						<button mat-flat-button type="button" color="primary" title="Map"
+							[ngClass]=" mapview ? 'active' : ''" (click)="mapview = !mapview">
+							<img src="../../../assets/images/map-icon.svg" />
+						</button>
+						<button mat-flat-button type="button" color="primary" class="ml-3" title="List"
+							[ngClass]="!mapview ? 'active' : ''" (click)="mapview = !mapview">
+							<img src="../../../assets/images/list-view-icon.svg" />
+						</button>
+					</div>
+				</div>
+				<mat-card class="dashboard-card mat-card p-0">
+					<div *ngIf="mapview" id="map-view">
+						<agm-map [latitude]="lat" [longitude]="lng" *ngIf="locationlist.length != 0">
+							<agm-marker *ngFor="let loc of locationlist" [latitude]="loc.latitude ? loc.latitude : lat"
+								[longitude]="loc.longitude ? loc.longitude : lng"
+								[iconUrl]="{ url: '../../../../assets/images/icon-location.svg'}">
+								<agm-info-window [isOpen]="true" #infoWindow>
+									<strong>{{loc.name}}</strong>
+								</agm-info-window>
+							</agm-marker>
+						</agm-map>
+					</div>
+
+					<div *ngIf="!mapview" id="map-list">
+
+						<div class="map-list-wrapper">
+							<div class="user-grid-wrapper p-3 pb-0">
+								<section class="content-header p-t-10">
+									<div class="ml-auto content-header-action">
+										<form (onsubmit)="search(locationobj.searchText)">
+											<div>
+												<mat-form-field class="example-full-width">
+													<input class="search" name="searchText"
+														[(ngModel)]="locationobj.searchText" matInput
+														placeholder="Search" autocomplete="off" value="">
+													<button type="submit" matSuffix mat-button class="search-btn"
+														(click)='search(locationobj.searchText)'>
+														<img src="../../../assets/images/search-icon.svg" alt="">
+													</button>
+												</mat-form-field>
+											</div>
+											<div class="p-l-20"><button type="button" mat-flat-button color="primary"
+													class="text-white" (click)="clickAdd()">Add Location</button></div>
+										</form>
+									</div>
+								</section>
+								<div class="row">
+									<div class="col-ld-6 col-lg-6 col-xl-6 m-b-30" *ngFor="let loc of locationlist">
+										<div class="user-grid-box">
+											<div class="user-status-indicator status-green"></div>
+											<div class="grid-inner-flex d-flex align-items-center">
+												<div class="user-image-box">
+													<img src="../../../assets/images/location-circle-icon.png"
+														class="img-fluid" alt="">
+												</div>
+												<div class="user-detail-box">
+													<h3 class="user-name"><a (click)="clickDetail(loc.guid)"
+															style="cursor:pointer">{{loc.name}}</a></h3>
+													<p class="user-details">Generators
+														<span>{{loc.totalGenerators}}</span></p>
+												</div>
+											</div>
+											<div class="user-actions d-flex flex-wrap">
+												<div class="user-actions-cta text-center">
+													<a class="green" [routerLink]="['/location',loc.guid]" title="Edit">
+														<img alt="Edit" src="./assets/images/icon-edit.svg">
+													</a>
+												</div>
+												<!-- <div class="user-actions-cta text-center">
+										  <a href="javascript:void(0);"
+											 title="View">
+											<img src="../../../assets/images/view-user.svg" alt="Delete">
+										  </a>
+										</div> -->
+												<div class="user-actions-cta text-center">
+													<a class="red" href="javascript:void(0)" data-toggle="modal"
+														data-target="#deviceDeleteModal" (click)="deleteModel(loc.guid)"
+														title="Delete">
+														<!-- <i class="far fa-trash-alt"></i> -->
+														<img src="./assets/images/icon-delete.svg">
+													</a>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+					<div *ngIf="locationlist.length === 0" class="centerclass">No locations found</div>
+
+
+				</mat-card>
+
+			</div>
+		</div>
+		<div class="col-xl-4 m-b-30">
+			<div class="drag-body dashboard-widget m-b-30">
+				<div class="panel-heading">
+					<h5 class="panel-title w-100"> Generator Battery Status </h5>
+				</div>
+				<mat-card class="dashboard-card mat-card">
+					<!-- <img class="img-fluid" style="height: 320px;object-fit: cover;"
+						src="../../../assets/images/bar-graph.jpg" /> -->
+					<google-chart *ngIf="chart['generaytorBatteryStatus']['dataTable'].length" #cchart
+						[data]="chart['generaytorBatteryStatus']"></google-chart>
+					<div *ngIf="!chart['generaytorBatteryStatus']['dataTable'].length"
+						class="text-center d-flex align-items-center justify-content-center" style="height: 300px;">
+						No data found
+					</div>
+				</mat-card>
+			</div>
+			<div class="drag-body dashboard-widget">
+				<div class="panel-heading">
+					<h5 class="panel-title"> Alerts </h5>
+					<div class="tab-link-bar">
+						<a [routerLink]="['/alerts']" href="javascript:;">View All</a>
+					  </div>
+				</div>
+				<mat-card class="dashboard-card mat-card pt-0">
+					<ul style="min-height: 372px;" class="alerts-dashboard">
+						<li *ngFor="let alert of alerts" class="alert-{{alert['severity']}}">
+							<span class="alerts-date">{{alert['eventDate'] | date:'M/d/yy, h:mm:ss a'}}</span>
+							<span class="alerts-info">{{alert['message']}}</span>
+						</li>
+						<div *ngIf="!alerts.length" class="centerclass">No records found</div>
+					</ul>
+					<div class="alert-indicator-wrapper">
+						<div class="alert-indicator-list">
+							<div class="alert-indicator bg-critical">
+								<span class="legend"></span>
+								<span class="alert-text">Critical</span>
+							</div>
+							<div class="alert-indicator bg-information">
+								<span class="legend"></span>
+								<span class="alert-text">Information</span>
+							</div>
+							<div class="alert-indicator bg-major">
+								<span class="legend"></span>
+								<span class="alert-text">Major</span>
+							</div>
+							<div class="alert-indicator bg-minor">
+								<span class="legend"></span>
+								<span class="alert-text">Minor</span>
+							</div>
+							<div class="alert-indicator bg-warningg">
+								<span class="legend"></span>
+								<span class="alert-text">Warning</span>
+							</div>
+						</div>
+					</div>
+				</mat-card>
+			</div>
+		</div>
+	</div>
+</div>
