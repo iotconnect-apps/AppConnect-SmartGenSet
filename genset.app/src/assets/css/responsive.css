@@ -10,6 +10,9 @@
     min-width: 30px;
     min-height: 30px;
   }
+  .alerts-dashboard span.alerts-date, .alerts-dashboard span.alerts-info {
+    font-size: 15px;
+  }
 }
 @media(max-width: 1440px){
   .card-information-item:not(:last-of-type){

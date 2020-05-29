@@ -1,4 +1,8 @@
-﻿
+﻿/*******************************************************************
+EXEC [dbo].[TelemetrySummary_HourWise_Add]	
+
+001	sgh-145 16-03-2020 [Nishit Khakhi]	Added Initial Version to Add Telemetry Summary Day wise for Day
+*******************************************************************/
 CREATE PROCEDURE [dbo].[TelemetrySummary_HourWise_Add]
 AS
 BEGIN
@@ -12,7 +16,7 @@ BEGIN
 	WHERE [configKey] = 'telemetry-last-exectime' AND [isDeleted] = 0
 
 	BEGIN TRAN		
-		DELETE FROM [dbo].[TelemetrySummary_Hourwise] WHERE (CONVERT(DATE,[Date]) BETWEEN @lastExecDate AND @dt) 
+		DELETE FROM [dbo].[TelemetrySummary_Hourwise] WHERE (CONVERT(DATE,[date]) BETWEEN CONVERT(DATE,@lastExecDate) AND CONVERT(DATE,@dt))  
 		
 		INSERT INTO [dbo].[TelemetrySummary_Hourwise]([guid]
 		,[gensetGuid]
@@ -28,11 +32,34 @@ BEGIN
 		SELECT NEWID(), [guid], DATEADD(HOUR,[HOUR],CAST([Date] AS smalldatetime)), [localName], 0, 0, ValueCount, 0, 0
 		FROM (
 		-- To Get AVG Value of 'co2','currentin','feedpressure','humidity'
-		select D.[guid],A.localName, CONVERT(DATE,A.createdDate) [Date], DATEPART(HOUR,A.createdDate) [Hour], AVG(CONVERT(BIGINT,attributeValue)) ValueCount
+		select D.[guid],KA.[code] AS localName, CONVERT(DATE,A.createdDate) [Date], DATEPART(HOUR,A.createdDate) [Hour], AVG(CONVERT(DECIMAL(18,2),attributeValue)) ValueCount
 		FROM [IOTConnect].[AttributeValue] A
+		INNER JOIN [dbo].[KitTypeAttribute] KA ON A.[localName] = (CASE WHEN CHARINDEX('.', KA.[localName]) > 0 THEN SUBSTRING(KA.[localName], CHARINDEX('.', KA.[localName]) + 1 , DATALENGTH(KA.[localName])) ELSE KA.[localName] END)
 		INNER JOIN [dbo].[Generator] D ON A.[uniqueId] = D.[uniqueId] AND D.[isDeleted] = 0
-		WHERE (CONVERT(DATE,A.[createdDate]) BETWEEN @lastExecDate AND @dt) AND A.localName IN ('co2','feedpressure','humidity','K','N','P')
-		GROUP BY D.[guid],A.localName, CONVERT(DATE,A.createdDate), DATEPART(HOUR,A.createdDate)
+		WHERE (CONVERT(DATE,A.[createdDate]) BETWEEN CONVERT(DATE,@lastExecDate) AND CONVERT(DATE,@dt)) AND A.localName IN ('latitude','longitude','batt_voltage','eng_temp','engine_rpm')
+		GROUP BY D.[guid],KA.[code], CONVERT(DATE,A.createdDate), DATEPART(HOUR,A.createdDate)
+		) A
+
+		INSERT INTO [dbo].[TelemetrySummary_Hourwise]([guid]
+		,[gensetGuid]
+		,[date]
+		,[attribute]
+		,[min]
+		,[max]
+		,[avg]
+		,[latest]
+		,[sum]
+		)
+		
+		SELECT NEWID(), [guid], DATEADD(HOUR,[HOUR],CAST([Date] AS smalldatetime)), [localName], 0, 0, 0, ValueCount, 0
+		FROM (
+		-- To Get AVG Value of 'co2','currentin','feedpressure','humidity'
+		select D.[guid],KA.[code] AS localName, CONVERT(DATE,A.createdDate) [Date], DATEPART(HOUR,A.createdDate) [Hour], AVG(CONVERT(DECIMAL(18,2),attributeValue)) ValueCount
+		FROM [IOTConnect].[AttributeValue] A
+		INNER JOIN [dbo].[KitTypeAttribute] KA ON A.[localName] = (CASE WHEN CHARINDEX('.', KA.[localName]) > 0 THEN SUBSTRING(KA.[localName], CHARINDEX('.', KA.[localName]) + 1 , DATALENGTH(KA.[localName])) ELSE KA.[localName] END)
+		INNER JOIN [dbo].[Generator] D ON A.[uniqueId] = D.[uniqueId] AND D.[isDeleted] = 0
+		WHERE (CONVERT(DATE,A.[createdDate]) BETWEEN CONVERT(DATE,@lastExecDate) AND CONVERT(DATE,@dt)) AND A.localName IN ('batt_level','coolant_level','fuel_level')
+		GROUP BY D.[guid],KA.[code], CONVERT(DATE,A.createdDate), DATEPART(HOUR,A.createdDate)
 		) A
 				
 		INSERT INTO [dbo].[TelemetrySummary_Hourwise]([guid]
@@ -49,37 +76,15 @@ BEGIN
 		SELECT NEWID(), [guid], DATEADD(HOUR,[HOUR],CAST([Date] AS smalldatetime)), [localName], 0, 0, 0, 0, ValueCount
 		FROM (
 		-- To Get SUM of 'flowrate'
-		select D.[guid],A.localName, CONVERT(DATE,A.createdDate) [DATE], DATEPART(HOUR,A.createdDate) [Hour], SUM(CONVERT(BIGINT,attributeValue)) ValueCount
+		select D.[guid],KA.[code] AS localName, CONVERT(DATE,A.createdDate) [DATE], DATEPART(HOUR,A.createdDate) [Hour], SUM(CONVERT(DECIMAL(18,2),attributeValue)) ValueCount
 		FROM [IOTConnect].[AttributeValue] A
+		INNER JOIN [dbo].[KitTypeAttribute] KA ON A.[localName] = (CASE WHEN CHARINDEX('.', KA.[localName]) > 0 THEN SUBSTRING(KA.[localName], CHARINDEX('.', KA.[localName]) + 1 , DATALENGTH(KA.[localName])) ELSE KA.[localName] END)
 		INNER JOIN [dbo].[Generator] D ON A.[uniqueId] = D.[uniqueId] AND D.[isDeleted] = 0
-		WHERE (CONVERT(DATE,A.[createdDate]) BETWEEN @lastExecDate AND @dt) AND A.localName IN ('flowrate','currentin')
-		GROUP BY D.[guid],A.localName, CONVERT(DATE,A.createdDate), DATEPART(HOUR,A.createdDate)
+		WHERE (CONVERT(DATE,A.[createdDate]) BETWEEN CONVERT(DATE,@lastExecDate) AND CONVERT(DATE,@dt)) AND A.localName IN ('currentOut','fuel_used')
+		GROUP BY D.[guid],KA.[code], CONVERT(DATE,A.createdDate), DATEPART(HOUR,A.createdDate)
 		) A
 				
-		;WITH CTE
-		AS (
-		SELECT D.[guid],A.localName, CONVERT(DATE,A.createdDate) [DATE], DATEPART(HOUR,A.createdDate) [Hour], CONVERT(BIGINT,attributeValue) [value], ROW_NUMBER() OVER (PARTITION BY A.[uniqueId],A.localName ORDER BY A.[createdDate] DESC) [no]
-		FROM [IOTConnect].[AttributeValue] A
-		INNER JOIN [dbo].[Generator] D ON A.[uniqueId] = D.[uniqueId] AND D.[isDeleted] = 0
-		WHERE (CONVERT(DATE,A.[createdDate]) BETWEEN @lastExecDate AND @dt) AND A.localName IN ('intst','moisture','temp')
-		)
-
-		INSERT INTO [dbo].[TelemetrySummary_Hourwise]([guid]
-		,[gensetGuid]
-		,[date]
-		,[attribute]
-		,[min]
-		,[max]
-		,[avg]
-		,[latest]
-		,[sum]
-		)
 		
-		SELECT NEWID(), [guid], DATEADD(HOUR,[HOUR],CAST([Date] AS smalldatetime)), [localName], 0, 0, 0, [value], 0
-		FROM (
-		-- To Get Latest Values of 'intst','K','moisture','N','P','temp'
-		SELECT [guid],[localName],[DATE],[HOUR],[value] from CTE WHERE [no] = 1
-		) A
 	  
 	COMMIT TRAN	
 

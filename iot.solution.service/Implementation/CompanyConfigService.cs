@@ -7,15 +7,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Entity = iot.solution.entity;
 using Model = iot.solution.model.Models;
+using LogHandler = component.services.loghandler;
 
 namespace iot.solution.service.Implementation
 {
     public class CompanyConfigService : ICompanyConfigService
     {
         private readonly ICompanyConfigRepository _companyConfigRepository;
-        private readonly ILogger _logger;
+        private readonly LogHandler.Logger _logger;
 
-        public CompanyConfigService(ICompanyConfigRepository companyConfigRepository, ILogger logManager)
+        public CompanyConfigService(ICompanyConfigRepository companyConfigRepository, LogHandler.Logger logManager)
         {
             _companyConfigRepository = companyConfigRepository;
             _logger = logManager;
@@ -30,7 +31,7 @@ namespace iot.solution.service.Implementation
             catch (Exception ex)
             {
 
-                _logger.Error(Constants.ACTION_EXCEPTION, "CompanyConfig.Get " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "CompanyConfig.Get " + ex);
                 return null;
             }
         }
@@ -43,7 +44,7 @@ namespace iot.solution.service.Implementation
             catch (Exception ex)
             {
 
-                _logger.Error(Constants.ACTION_EXCEPTION, "CompanyConfig.Get " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "CompanyConfig.Get " + ex);
                 return null;
             }
         }
@@ -82,7 +83,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "CompanyConfig.Manage " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "CompanyConfig.Manage " + ex);
                 return new Entity.ActionStatus
                 {
                     Success = false,
@@ -102,7 +103,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "CompanyConfig.Delete " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "CompanyConfig.Delete " + ex);
                 return new Entity.ActionStatus
                 {
                     Success = false,

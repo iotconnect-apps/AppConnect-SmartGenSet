@@ -60,7 +60,7 @@ export class UserAdminListComponent implements OnInit {
 		this.dataSource.filter = filterValue;
 	}
 	clickAdd() {
-		this.router.navigate(['admin/user/add']);
+		this.router.navigate(['admin/users/add']);
 	}
 
 	setOrder(sort: any) {

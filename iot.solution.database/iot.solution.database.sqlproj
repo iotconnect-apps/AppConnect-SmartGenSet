@@ -65,6 +65,7 @@
     <Folder Include="Security\" />
     <Folder Include="dbo\Stored Procedures\" />
     <Folder Include="IOTConnect\Stored Procedures" />
+    <Folder Include="Scripts" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\KitTypeAttribute.sql" />
@@ -123,8 +124,6 @@
     <Build Include="dbo\Stored Procedures\Generator_Get.sql" />
     <Build Include="dbo\Stored Procedures\Generator_Delete.sql" />
     <Build Include="dbo\Stored Procedures\Generator_AddUpdate.sql" />
-    <Build Include="dbo\Stored Procedures\ChartDate1.sql" />
-    <Build Include="dbo\Stored Procedures\ChartDate.sql" />
     <Build Include="dbo\Stored Procedures\GensetUsage_Get.sql" />
     <Build Include="dbo\Stored Procedures\AdminRule_List.sql" />
     <Build Include="dbo\Stored Procedures\CompanyStatistics_Get.sql" />
@@ -139,11 +138,15 @@
     <Build Include="dbo\Stored Procedures\Chart_GeneratorUsage.sql" />
     <Build Include="dbo\Tables\IOTConnectAlert.sql" />
     <Build Include="dbo\Stored Procedures\Alert_List.sql" />
+    <Build Include="dbo\Stored Procedures\IOTConnectAlert_Add.sql" />
+    <Build Include="dbo\Stored Procedures\LocationStatistics_Get.sql" />
+    <Build Include="dbo\Stored Procedures\DeviceStatistics_Get.sql" />
+    <PostDeploy Include="Scripts\MasterData.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="iot.solution.database.refactorlog" />
   </ItemGroup>
   <ItemGroup>
-    <PostDeploy Include="dbo\Stored Procedures\masterdata.sql" />
+    <None Include="Scripts\Script.PostDeployment.sql" />
   </ItemGroup>
 </Project>

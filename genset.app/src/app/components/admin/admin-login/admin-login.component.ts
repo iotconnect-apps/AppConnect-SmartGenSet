@@ -2,7 +2,7 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core'
 import { FormControl, FormGroup, Validators } from '@angular/forms'
 import { Router } from '@angular/router'
 import { NgxSpinnerService } from 'ngx-spinner'
-import { UserService, NotificationService, Notification } from '../../../services/index'
+import { UserService, NotificationService, Notification, AuthService } from '../../../services/index'
 
 
 @Component({
@@ -14,19 +14,32 @@ export class AdminLoginComponent implements OnInit {
   loginform: FormGroup;
   checkSubmitStatus = false;
   loginObject = {};
-
+  currentUser:any
   constructor(
     private spinner: NgxSpinnerService,
     private router: Router,
     private _notificationService: NotificationService,
-    public UserService: UserService
+    public UserService: UserService,
+    public authService: AuthService,
   ) { }
 
   ngOnInit() {
     this.createFormGroup();
+    if(localStorage.getItem("currentUser")){
+      this.logout();
+    }
     // logout the person when he opens the app for the first time
   }
 
+	logout() {
+    this.currentUser = JSON.parse(localStorage.getItem("currentUser"));
+		this.authService.logout();
+			if(this.currentUser.userDetail.isAdmin){
+				this.router.navigate(['/admin'])
+			} else {
+				this.router.navigate(['/login'])
+			}
+	  }
   /**
    * Create Form
    * */

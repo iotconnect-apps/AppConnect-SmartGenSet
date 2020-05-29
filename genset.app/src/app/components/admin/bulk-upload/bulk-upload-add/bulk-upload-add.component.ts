@@ -54,7 +54,7 @@ export class BulkuploadAddComponent implements OnInit {
   spaceList = [];
   templateList = [];
   dataSource: any = [];
-  displayedColumns: string[] = ['kitCode', 'uniqueId', 'name', 'tag', 'action'];
+  displayedColumns: string[] = ['kitCode', 'uniqueId', 'name', 'action'];
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
 
   index: any = -1;
@@ -119,6 +119,10 @@ export class BulkuploadAddComponent implements OnInit {
           this.formshow = true
          this._notificationService.add(new Notification('success', " File verified successfully."));
           } else {
+            this.dataSource = new MatTableDataSource(response.data);
+            this.dataSource.paginator = this.paginator;
+            this.tblshow = true
+            //this.formshow = true
             this.bulkForm.get('kit_list').setValue(null)
              this.checkSubmitStatus = false;
              this.myInputVariable.nativeElement.value = "";
@@ -193,6 +197,7 @@ export class BulkuploadAddComponent implements OnInit {
           reader.readAsText(f);
         }
       } else {
+        this.myInputVariable.nativeElement.value = "";
         this.MesageAlertDataModel = {
           title: "Bulkupload",
           message: "Invalid File Type.",

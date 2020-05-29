@@ -10,7 +10,7 @@ using System.Linq;
 using System.Reflection;
 using Entity = iot.solution.entity;
 using IOT = IoTConnect.Model;
-
+using LogHandler = component.services.loghandler;
 
 namespace iot.solution.service.Data
 {
@@ -19,9 +19,9 @@ namespace iot.solution.service.Data
         private readonly INotificationsRepository _inotificationsrepository;
         private readonly IotConnectClient _iotConnectClient;
         private readonly IKitTypeService _kitTypeService;
-        private readonly ILogger _logger;
-
-        public NotificationsService(INotificationsRepository notificationsRepository, IKitTypeService kitTypeService, ILogger logger)
+        
+        private readonly LogHandler.Logger _logger;
+        public NotificationsService(INotificationsRepository notificationsRepository, IKitTypeService kitTypeService, LogHandler.Logger logger)
         {
             _logger = logger;
             _inotificationsrepository = notificationsRepository;

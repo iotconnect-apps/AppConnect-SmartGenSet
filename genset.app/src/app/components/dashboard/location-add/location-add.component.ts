@@ -98,7 +98,7 @@ export class LocationAddComponent implements OnInit {
 			latitude: new FormControl('', [Validators.required,Validators.pattern('^(\\+|-)?(?:90(?:(?:\\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\\.[0-9]{1,6})?))$')]),
 			longitude: new FormControl('', [Validators.required,Validators.pattern('^(\\+|-)?(?:180(?:(?:\\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\\.[0-9]{1,6})?))$')]),
 			city: new FormControl('', [Validators.required]),
-			zipcode: new FormControl('', [Validators.required,Validators.pattern('^[0-9]*$')]),
+      zipcode: new FormControl('', [Validators.required, Validators.pattern('^[A-Z0-9 _]*$')]),
 			address: new FormControl(''),
 			address2: new FormControl(''),
 			parentEntityGuid: new FormControl(''),

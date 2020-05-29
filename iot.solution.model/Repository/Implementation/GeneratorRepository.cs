@@ -325,7 +325,37 @@ namespace iot.solution.model.Repository.Implementation
             }
             return result;
         }
-        
+
+        #region Get Device statics
+        public Entity.BaseResponse<List<Response.GeneratorDetailResponse>> GetGeneratorStatics(Guid generatorId)
+        {
+            Entity.BaseResponse <List<Response.GeneratorDetailResponse>> result = new Entity.BaseResponse<List<Response.GeneratorDetailResponse>>();
+            try
+            {
+                logger.Information(Constants.ACTION_ENTRY, "GeneratorRepository.GetGeneratorStatics");
+                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                {
+                    List<System.Data.Common.DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CompanyId, component.helper.SolutionConfiguration.Version);
+                    parameters.Add(sqlDataAccess.CreateParameter("guid", generatorId, DbType.Guid, ParameterDirection.Input));
+                    parameters.Add(sqlDataAccess.CreateParameter("syncDate", DateTime.UtcNow, DbType.DateTime, ParameterDirection.Output));
+                    DbDataReader dbDataReader = sqlDataAccess.ExecuteReader(sqlDataAccess.CreateCommand("[DeviceStatistics_Get]", CommandType.StoredProcedure, null), parameters.ToArray());
+                    result.Data = DataUtils.DataReaderToList<Response.GeneratorDetailResponse>(dbDataReader, null);
+                    if (parameters.Where(p => p.ParameterName.Equals("syncDate")).FirstOrDefault() != null)
+                    {
+                        result.LastSyncDate = Convert.ToString(parameters.Where(p => p.ParameterName.Equals("syncDate")).FirstOrDefault().Value);
+                    }
+                }
+                logger.Information(Constants.ACTION_EXIT, "GeneratorRepository.GetGeneratorStatics");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(Constants.ACTION_EXCEPTION, ex);
+            }
+            return result;
+        }
+    
+        #endregion
+
         #region Lookup
         public List<Entity.LookupItem> GetGeneratorLookup()
         {

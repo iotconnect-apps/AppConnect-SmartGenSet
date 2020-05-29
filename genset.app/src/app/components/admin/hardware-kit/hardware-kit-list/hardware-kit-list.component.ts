@@ -45,7 +45,9 @@ export class HardwareListComponent implements OnInit {
   ngOnInit() {
     this.getHardwarkitList();
   }
-
+	clickBulk(){
+		this.router.navigate(['admin/hardwarekits/bulkupload']);
+	}
   /**
    * Set order for sorting
    * @param sort

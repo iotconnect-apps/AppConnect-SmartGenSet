@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router'
 import { FormControl, FormGroup, Validators } from '@angular/forms'
 import { NgxSpinnerService } from 'ngx-spinner'
@@ -27,6 +27,7 @@ export interface StatusList {
 
 
 export class GeneratorAddComponent implements OnInit {
+  @ViewChild('myFile', { static: false }) myFile: ElementRef;
   validstatus = false;
   MesageAlertDataModel: MesageAlertDataModel;
   unique = false;
@@ -104,10 +105,10 @@ export class GeneratorAddComponent implements OnInit {
       locationGuid: new FormControl('', [Validators.required]),
       typeGuid: new FormControl('', [Validators.required]),
       parentGensetGuid: new FormControl(''),
-      uniqueId: new FormControl('', [Validators.required, Validators.pattern('^[A-Za-z0-9 ]+$')]),
+      uniqueId: new FormControl('', [Validators.required, Validators.pattern('^[A-Za-z0-9]+$')]),
       tag: new FormControl(''),
       note: new FormControl(''),
-      kitcode: new FormControl('', [Validators.required]),
+      kitcode: new FormControl('', [Validators.required, Validators.pattern('^[A-Za-z0-9 ]+$')]),
       isProvisioned: new FormControl(false),
       isActive: new FormControl(true),
       specification: new FormControl(''),
@@ -330,8 +331,9 @@ export class GeneratorAddComponent implements OnInit {
         this.fileName = files.item(0).name;
         this.fileToUpload = files.item(0);
       } else {
+        this.imageRemove();
         this.MesageAlertDataModel = {
-          title: "GENERATOR",
+          title: "Generator Image",
           message: "Invalid Image Type.",
           message2: "Upload .jpg, .jpeg, .png Image Only.",
           okButtonName: "OK",
@@ -353,4 +355,15 @@ export class GeneratorAddComponent implements OnInit {
       }
     }
   }
+
+    /**
+  * Remove image
+  * */
+ imageRemove() {
+  this.myFile.nativeElement.value = "";
+  this.fileUrl = null;
+  this.genraterForm.get('imageFile').setValue('');
+  this.fileToUpload = false;
+  this.fileName = '';
+}
 }

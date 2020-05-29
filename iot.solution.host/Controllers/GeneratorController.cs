@@ -1,4 +1,5 @@
 ﻿using iot.solution.entity.Structs.Routes;
+using iot.solution.host.Filter;
 using iot.solution.service.Interface;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -31,6 +32,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.Generator>>(false, ex.Message);
             }
             return response;
@@ -38,15 +40,17 @@ namespace host.iot.solution.Controllers
 
         [HttpGet]
         [Route(GeneratorRoute.Route.GetById, Name = GeneratorRoute.Name.GetById)]
-        public Entity.BaseResponse<Entity.Generator> Get(Guid id)
+        [EnsureGuidParameterAttribute("id", "Generator")]
+        public Entity.BaseResponse<Entity.Generator> Get(string id)
         {
             Entity.BaseResponse<Entity.Generator> response = new Entity.BaseResponse<Entity.Generator>(true);
             try
             {
-                response.Data = _service.Get(id);
+                response.Data = _service.Get(Guid.Parse(id));
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.Generator>(false, ex.Message);
             }
             return response;
@@ -67,6 +71,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Guid>(false, ex.Message);
             }
             return response;
@@ -75,6 +80,7 @@ namespace host.iot.solution.Controllers
         [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
         [HttpPost]
         [Route(GeneratorRoute.Route.FileUpload, Name = GeneratorRoute.Name.FileUpload)]
+        [EnsureGuidParameterAttribute("generatorId", "Generator")]
         public Entity.BaseResponse<bool> Upload(List<Microsoft.AspNetCore.Http.IFormFile> files, string generatorId)
         {
             Entity.BaseResponse<bool> response = new Entity.BaseResponse<bool>(true);
@@ -91,6 +97,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<bool>(false, ex.Message);
             }
             return response;
@@ -99,26 +106,49 @@ namespace host.iot.solution.Controllers
         [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
         [HttpPut]
         [Route(GeneratorRoute.Route.Delete, Name = GeneratorRoute.Name.Delete)]
-        public Entity.BaseResponse<bool> Delete(Guid id)
+        [EnsureGuidParameterAttribute("id", "Generator")]
+        public Entity.BaseResponse<bool> Delete(string id)
         {
             Entity.BaseResponse<bool> response = new Entity.BaseResponse<bool>(true);
             try
             {
-                var status = _service.Delete(id);
+                var status = _service.Delete(Guid.Parse(id));
                 response.IsSuccess = status.Success;
                 response.Message = status.Message;
                 response.Data = status.Success;
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<bool>(false, ex.Message);
             }
             return response;
         }
-
+        [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
+        [HttpPut]
+        [Route(GeneratorRoute.Route.DeleteImage, Name = GeneratorRoute.Name.DeleteImage)]
+        [EnsureGuidParameterAttribute("id", "Generator")]
+        public Entity.BaseResponse<bool> DeleteImage(string id)
+        {
+            Entity.BaseResponse<bool> response = new Entity.BaseResponse<bool>(true);
+            try
+            {
+                var status = _service.DeleteImage(Guid.Parse(id));
+                response.IsSuccess = status.Success;
+                response.Message = status.Message;
+                response.Data = status.Success;
+            }
+            catch (Exception ex)
+            {
+                base.LogException(ex);
+                return new Entity.BaseResponse<bool>(false, ex.Message);
+            }
+            return response;
+        }
         [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
         [HttpPut]
         [Route(GeneratorRoute.Route.DeleteMediaFile, Name = GeneratorRoute.Name.DeleteMediaFile)]
+        [EnsureGuidParameterAttribute("generatorId", "Generator")]
         public Entity.BaseResponse<bool> DeleteMediaFile(Guid generatorId, Guid? fileId)
         {
             Entity.BaseResponse<bool> response = new Entity.BaseResponse<bool>(true);
@@ -131,6 +161,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<bool>(false, ex.Message);
             }
             return response;
@@ -152,6 +183,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.SearchResult<List<Entity.Generator>>>(false, ex.Message);
             }
             return response;
@@ -159,18 +191,20 @@ namespace host.iot.solution.Controllers
 
         [HttpPost]
         [Route(GeneratorRoute.Route.UpdateStatus, Name = GeneratorRoute.Name.UpdateStatus)]
-        public Entity.BaseResponse<bool> UpdateStatus(Guid id, bool status)
+        [EnsureGuidParameterAttribute("id", "Generator")]
+        public Entity.BaseResponse<bool> UpdateStatus(string id, bool status)
         {
             Entity.BaseResponse<bool> response = new Entity.BaseResponse<bool>(true);
             try
             {
-                Entity.ActionStatus result = _service.UpdateStatus(id, status);
+                Entity.ActionStatus result = _service.UpdateStatus(Guid.Parse(id), status);
                 response.IsSuccess = result.Success;
                 response.Message = result.Message;
                 response.Data = result.Success;
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<bool>(false, ex.Message);
             }
             return response;
@@ -178,6 +212,7 @@ namespace host.iot.solution.Controllers
 
         [HttpPost]
         [Route(GeneratorRoute.Route.AcquireDevice, Name = GeneratorRoute.Name.AcquireDevice)]
+        [EnsureGuidParameterAttribute("deviceUniqueId", "Generator")]
         public Entity.BaseResponse<bool> AcquireDevice(string deviceUniqueId)
         {
             Entity.BaseResponse<bool> response = new Entity.BaseResponse<bool>(true);
@@ -190,6 +225,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<bool>(false, ex.Message);
             }
             return response;
@@ -206,6 +242,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<int>(false, ex.Message);
             }
             return response;
@@ -221,7 +258,54 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.DeviceCounterResult>(false, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route(GeneratorRoute.Route.TelemetryData, Name = GeneratorRoute.Name.TelemetryData)]
+        [EnsureGuidParameterAttribute("generatorId", "Generator")]
+        public Entity.BaseResponse<List<Entity.DeviceTelemetryDataResult>> GetTelemetryData(Guid generatorId)
+        {
+            try
+            {
+                return _service.GetTelemetryData(generatorId);
+            }
+            catch (Exception ex)
+            {
+                base.LogException(ex);
+                return new Entity.BaseResponse<List<Entity.DeviceTelemetryDataResult>>(false, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route(GeneratorRoute.Route.DeviceCountersByEntity, Name = GeneratorRoute.Name.DeviceCountersByEntity)]
+        public Entity.BaseResponse<Entity.DeviceCounterByEntityResult> DeviceCountersByEntity(string entityGuid)
+        {
+            try
+            {
+                return _service.GetDeviceCountersByEntity(Guid.Parse(entityGuid));
+            }
+            catch (Exception ex)
+            {
+                base.LogException(ex);
+                return new Entity.BaseResponse<Entity.DeviceCounterByEntityResult>(false, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route(GeneratorRoute.Route.ConnectionStatus, Name = GeneratorRoute.Name.ConnectionStatus)]
+        public Entity.BaseResponse<Entity.DeviceConnectionStatusResult> ConnectionStatus(string uniqueId)
+        {
+            try
+            {
+                return _service.GetConnectionStatus(uniqueId);
+            }
+            catch (Exception ex)
+            {
+                base.LogException(ex);
+                return new Entity.BaseResponse<Entity.DeviceConnectionStatusResult>(false, ex.Message);
             }
         }
 

@@ -10,6 +10,8 @@ using Entity = iot.solution.entity;
 using IOT = IoTConnect.Model;
 using Model = iot.solution.model.Models;
 using Response = iot.solution.entity.Response;
+using LogHandler = component.services.loghandler;
+using System.Reflection;
 
 namespace iot.solution.service.Implementation
 {
@@ -17,15 +19,16 @@ namespace iot.solution.service.Implementation
     {
         private readonly ILocationRepository _locationRepository;
         private readonly IotConnectClient _iotConnectClient;
-        private readonly ILogger _logger;
+        private readonly LogHandler.Logger _logger;
         private readonly IGeneratorRepository _generatorRepository;
-
-        public LocationService(ILocationRepository locationRepository, ILogger logger, IGeneratorRepository generatorRepository)
+        private readonly IGeneratorService _generatorService;
+        public LocationService(ILocationRepository locationRepository, LogHandler.Logger logger, IGeneratorRepository generatorRepository, IGeneratorService generatorService)
         {
             _logger = logger;
             _locationRepository = locationRepository;
             _generatorRepository = generatorRepository;
             _iotConnectClient = new IotConnectClient(component.helper.SolutionConfiguration.BearerToken, component.helper.SolutionConfiguration.Configuration.EnvironmentCode, component.helper.SolutionConfiguration.Configuration.SolutionKey);
+            _generatorService = generatorService;
         }
         public List<Entity.LocationWithCounts> Get()
         {
@@ -36,21 +39,24 @@ namespace iot.solution.service.Implementation
             catch (Exception ex)
             {
 
-                _logger.Error(Constants.ACTION_EXCEPTION, "LocationService.GetAll " + ex);
+                _logger.ErrorLog(ex, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                 return new List<Entity.LocationWithCounts>();
             }
         }
         public Entity.Location Get(Guid id)
         {
+            var result = new Entity.Location();
             try
             {
-                return _locationRepository.FindBy(r => r.Guid == id).Select(p => Mapper.Configuration.Mapper.Map<Entity.Location>(p)).FirstOrDefault();
+                result = _locationRepository.FindBy(r => r.Guid == id).Select(p => Mapper.Configuration.Mapper.Map<Entity.Location>(p)).FirstOrDefault();
+
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "LocationService.Get " + ex);
+                _logger.ErrorLog(ex, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                 return null;
             }
+            return result;
         }
         public Entity.ActionStatus Manage(Entity.AddLocationRequest request)
         {
@@ -77,11 +83,11 @@ namespace iot.solution.service.Implementation
                             actionStatus.Data = (Guid)(actionStatus.Data);
                             if (!actionStatus.Success)
                             {
-                                _logger.Error($"Location is not added in solution database, Error: {actionStatus.Message}");
+                                _logger.ErrorLog(new Exception($"Location is not added in solution database, Error: {actionStatus.Message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                                 var deleteEntityResult = _iotConnectClient.Entity.Delete(request.Guid.ToString()).Result;
                                 if (deleteEntityResult != null && deleteEntityResult.status)
                                 {
-                                    _logger.Error($"Location is not deleted from iotconnect, Error: {deleteEntityResult.message}");
+                                    _logger.ErrorLog(new Exception($"Location is not deleted from iotconnect, Error: {deleteEntityResult.message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                                     actionStatus.Success = false;
                                     actionStatus.Message = new UtilityHelper().IOTResultMessage(deleteEntityResult.errorMessages);
                                 }
@@ -89,14 +95,14 @@ namespace iot.solution.service.Implementation
                         }
                         else
                         {
-                            _logger.Error($"Location is not added in iotconnect, Error: {addEntityResult.message}");
+                            _logger.ErrorLog(new Exception($"Location is not added in iotconnect, Error: {addEntityResult.message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                             actionStatus.Success = false;
                             actionStatus.Message = new UtilityHelper().IOTResultMessage(addEntityResult.errorMessages);
                         }
                     }
                     else
                     {
-                        _logger.Error($"Location Already Exist !!");
+                        _logger.InfoLog($"Location Already Exist !!");
                         actionStatus.Success = false;
                         actionStatus.Message = "Location Name Already Exists";
                     }
@@ -120,14 +126,14 @@ namespace iot.solution.service.Implementation
                         actionStatus.Data = (Guid)actionStatus.Data;
                         if (!actionStatus.Success)
                         {
-                            _logger.Error($"Location is not updated in solution database, Error: {actionStatus.Message}");
+                            _logger.ErrorLog(new Exception($"Location is not updated in solution database, Error: {actionStatus.Message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                             actionStatus.Success = false;
                             actionStatus.Message = "Something Went Wrong!";
                         }
                     }
                     else
                     {
-                        _logger.Error($"Location is not added in iotconnect, Error: {updateEntityResult.message}");
+                        _logger.ErrorLog(new Exception($"Location is not added in iotconnect, Error: {updateEntityResult.message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                         actionStatus.Success = false;
                         actionStatus.Message = new UtilityHelper().IOTResultMessage(updateEntityResult.errorMessages);
                     }
@@ -136,7 +142,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "LocationService.Manage " + ex);
+                _logger.ErrorLog(ex, "LocationService.Manage " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
@@ -165,14 +171,14 @@ namespace iot.solution.service.Implementation
                     }
                     else
                     {
-                        _logger.Error($"Location is not deleted from iotconnect, Error: {deleteEntityResult.message}");
+                        _logger.ErrorLog(new Exception($"Location is not deleted from iotconnect, Error: {deleteEntityResult.message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                         actionStatus.Success = false;
                         actionStatus.Message = new UtilityHelper().IOTResultMessage(deleteEntityResult.errorMessages);
                     }
                 }
                 else
                 {
-                    _logger.Error($"Location is not deleted in solution database.Generator exists, Error: {actionStatus.Message}");
+                    _logger.ErrorLog(new Exception($"Location is not deleted in solution database.Generator exists, Error: {actionStatus.Message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                     actionStatus.Success = false;
                     actionStatus.Message = "Location is not deleted in solution database.Generator exists";
                 }
@@ -181,7 +187,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "Location.Delete " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "Location.Delete " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
@@ -200,7 +206,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, $"LocationService.List, Error: {ex.Message}");
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, $"LocationService.List, Error: {ex.Message}");
                 return new Entity.SearchResult<List<Entity.LocationWithCounts>>();
             }
         }
@@ -225,7 +231,7 @@ namespace iot.solution.service.Implementation
                 }
                 else
                 {
-                    _logger.Error($"Location is not updated in solution database.Generator exists, Error: {actionStatus.Message}");
+                    _logger.ErrorLog(new Exception($"Location is not updated in solution database.Generator exists, Error: {actionStatus.Message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                     actionStatus.Success = false;
                     actionStatus.Message = "Location is not updated in solution database.Generator exists";
                 }
@@ -233,11 +239,39 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "LocationService.UpdateStatus " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "LocationService.UpdateStatus " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
             return actionStatus;
+        }
+        public Entity.BaseResponse<Entity.LocationStaticsResponse> GetLocationStatics(Guid locationId)
+        {
+            Entity.BaseResponse<List<Entity.LocationStaticsResponse>> listResult = new Entity.BaseResponse<List<Entity.LocationStaticsResponse>>();
+            Entity.BaseResponse<Entity.LocationStaticsResponse> result = new Entity.BaseResponse<Entity.LocationStaticsResponse>();
+            try
+            {
+                listResult = _locationRepository.GetLocationStatics(locationId);
+                var deviceResult = _generatorService.GetDeviceCountersByEntity(locationId);
+
+                if (listResult.Data.Count > 0)
+                {
+                    result.IsSuccess = true;
+                    result.Data = listResult.Data[0];
+                    result.LastSyncDate = listResult.LastSyncDate;
+                    if (deviceResult.IsSuccess && deviceResult.Data != null)
+                    {
+                        result.Data.TotalGenerators = deviceResult.Data.counters.total;
+                        result.Data.TotalOnGenerators = deviceResult.Data.counters.connected;
+                        result.Data.TotalDisconnectedGenerators = deviceResult.Data.counters.disConnected;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, ex);
+            }
+            return result;
         }
         public Response.LocationDetailResponse GetLocationDetail(Guid locationId)
         {

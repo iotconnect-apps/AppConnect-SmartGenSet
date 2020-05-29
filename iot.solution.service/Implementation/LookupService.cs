@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Entity = iot.solution.entity;
+using LogHandler = component.services.loghandler;
 
 namespace iot.solution.service.Data
 {
@@ -16,12 +17,12 @@ namespace iot.solution.service.Data
         private readonly IHardwareKitRepository _hardwareKitRepository;
         private readonly ILocationRepository _locationRepository;
         private readonly ICompanyRepository _companyRepository;
-        private readonly ILogger _logger;
+        private readonly LogHandler.Logger _logger;
         private readonly IotConnectClient _iotConnectClient;
         private readonly IKitTypeRepository _kitTypeRepository;
         private readonly IKitTypeAttributeRepository _kitTypeAttributeRepository;
         private readonly IkitTypeCommandRepository _kitTypeCommandRepository;
-        public LookupService(ILogger logManager, IGeneratorRepository deviceRepository, IkitTypeCommandRepository kitTypeCommandRepository
+        public LookupService(LogHandler.Logger logManager, IGeneratorRepository deviceRepository, IkitTypeCommandRepository kitTypeCommandRepository
            , ILocationRepository locationRepository, IHardwareKitRepository hardwareKitRepository
              , ICompanyRepository companyRepository
            , IKitTypeRepository kitTypeRepository, IKitTypeAttributeRepository kitTypeAttributeRepository)

@@ -6,14 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Entity = iot.solution.entity;
+using LogHandler = component.services.loghandler;
 
 namespace iot.solution.service.Implementation
 {
     public class HardwareKitService : IHardwareKitService
     {
         private readonly IHardwareKitRepository _hardwareKitRepository;
-        private readonly ILogger _logger;
-        public HardwareKitService(IHardwareKitRepository hardwareKitRepository, ILogger logManager)
+        private readonly LogHandler.Logger _logger;
+        public HardwareKitService(IHardwareKitRepository hardwareKitRepository, LogHandler.Logger logManager)
         {
             _hardwareKitRepository = hardwareKitRepository;
             _logger = logManager;
@@ -27,7 +28,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, $"HardwareKitService.List, Error: {ex.Message}");
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, $"HardwareKitService.List, Error: {ex.Message}");
                 return new Entity.SearchResult<List<Entity.HardwareKitResponse>>();
             }
         }
@@ -96,7 +97,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "HardwareKit.Manage " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "HardwareKit.Manage " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
@@ -118,7 +119,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "HardwareKit.Delete " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "HardwareKit.Delete " + ex);
                 return new Entity.ActionStatus
                 {
                     Success = false,
@@ -147,7 +148,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "HardwareKit.Upload " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "HardwareKit.Upload " + ex);
                 return new Entity.ActionStatus
                 {
                     Success = false,
@@ -165,7 +166,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "HardwareKit.Verify " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "HardwareKit.Verify " + ex);
                 return new Entity.ActionStatus
                 {
                     Success = false,

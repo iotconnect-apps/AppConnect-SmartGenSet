@@ -6,7 +6,7 @@ using iot.solution.service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-//using LogHandler = component.services.loghandler;
+using LogHandler = component.services.loghandler;
 using System.Reflection;
 using Entity = iot.solution.entity;
 using Model = iot.solution.model.Models;
@@ -16,8 +16,8 @@ namespace iot.solution.service.Implementation
     public class AdminRuleService : IAdminRuleService
     {
         private readonly IAdminRuleRepository _adminRuleRepository;
-        private readonly ILogger _logger;
-        public AdminRuleService(IAdminRuleRepository adminRuleRepository, ILogger logger)
+        private readonly LogHandler.Logger _logger;
+        public AdminRuleService(IAdminRuleRepository adminRuleRepository, LogHandler.Logger logger)
         {
             _adminRuleRepository = adminRuleRepository;
             _logger = logger;

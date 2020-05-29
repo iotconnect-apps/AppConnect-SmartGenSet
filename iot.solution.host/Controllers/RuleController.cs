@@ -1,4 +1,5 @@
 ﻿using iot.solution.entity.Structs.Routes;
+using iot.solution.host.Filter;
 using iot.solution.service.Interface;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -20,15 +21,17 @@ namespace host.iot.solution.Controllers
 
         [HttpGet]
         [Route(RuleRoute.Route.GetById, Name = RuleRoute.Name.GetById)]
-        public Entity.BaseResponse<Entity.SingleRuleResponse> Get(Guid id)
+        [EnsureGuidParameterAttribute("id", "Rule")]
+        public Entity.BaseResponse<Entity.SingleRuleResponse> Get(string id)
         {
             Entity.BaseResponse<Entity.SingleRuleResponse> response = new Entity.BaseResponse<Entity.SingleRuleResponse>(true);
             try
             {
-                response.Data = _service.Get(id);
+                response.Data = _service.Get(Guid.Parse(id));
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.SingleRuleResponse>(false, ex.Message);
             }
             return response;
@@ -53,6 +56,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.SingleRuleResponse>(false, ex.Message);
             }
             return response;
@@ -77,6 +81,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.VerifyRuleResult>(false, ex.Message);
             }
             return response;
@@ -99,6 +104,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.SearchResult<List<Entity.AllRuleResponse>>>(false, ex.Message);
             }
             return response;
@@ -106,18 +112,20 @@ namespace host.iot.solution.Controllers
 
         [HttpPut]
         [Route(RuleRoute.Route.Delete, Name = RuleRoute.Name.Delete)]
-        public Entity.BaseResponse<bool> Delete(Guid id)
+        [EnsureGuidParameterAttribute("id", "Rule")]
+        public Entity.BaseResponse<bool> Delete(string id)
         {
             Entity.BaseResponse<bool> response = new Entity.BaseResponse<bool>(true);
             try
             {
-                var status = _service.Delete(id);
+                var status = _service.Delete(Guid.Parse(id));
                 response.IsSuccess = status.Success;
                 response.Message = status.Message;
                 response.Data = status.Success;
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<bool>(false, ex.Message);
             }
             return response;

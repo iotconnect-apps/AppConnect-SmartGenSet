@@ -62,8 +62,8 @@ export class HardwareAddComponent implements OnInit {
     this.deviceForm = new FormGroup({
       //guid: new FormControl(null),
       kitTypeGuid: new FormControl('', [Validators.required]),
-      kitCode: new FormControl('', [Validators.required]),
-      uniqueId: new FormControl('', [Validators.required, Validators.pattern('^[A-Za-z0-9 ]+$')]),
+      kitCode: new FormControl('', [Validators.required,Validators.pattern('^[A-Za-z0-9 ]+$')]),
+      uniqueId: new FormControl('', [Validators.required, Validators.pattern('^[A-Za-z0-9]+$')]),
       name: new FormControl('', [Validators.required]),
       note: new FormControl(''),
       tag: new FormControl(''),

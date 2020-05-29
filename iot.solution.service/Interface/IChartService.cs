@@ -8,10 +8,12 @@ namespace iot.solution.service.Interface
 {
     public interface IChartService
     {
-        List<Response.FuelUsageResponse> GetFuelUsage(Request.ChartRequest request);
+        Entity.ActionStatus TelemetrySummary_DayWise();
+        Entity.ActionStatus TelemetrySummary_HourWise();
+        Entity.BaseResponse<List<Response.FuelUsageResponse>> GetFuelUsage(Request.ChartRequest request);
         List<Response.EnergyUsageResponse> GetEnergyUsage(Request.ChartRequest request);
-        List<Response.EnergyUsageResponse> GetEnergyGenerated(Request.ChartRequest request);
-        List<Response.GeneratorUsageResponse> GetGeneratorUsage(Request.ChartRequest request);
-        List<Response.GeneratorBatteryStatusResponse> GetGeneratorBatteryStatus(Request.ChartRequest request);
+        Entity.BaseResponse<List<Response.EnergyUsageResponse>> GetEnergyGenerated(Request.ChartRequest request);
+        Entity.BaseResponse<List<Response.GeneratorUsageResponse>> GetGeneratorUsage(Request.ChartRequest request);
+        Entity.BaseResponse<List<Response.GeneratorBatteryStatusResponse>> GetGeneratorBatteryStatus(Request.ChartRequest request);
     }
 }

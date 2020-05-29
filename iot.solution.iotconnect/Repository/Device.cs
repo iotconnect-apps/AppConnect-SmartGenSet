@@ -466,7 +466,7 @@ namespace IoTConnect.DeviceProvider
             }
         }
 
-        
+
         /// <summary>
         //This Method allows you to change the status of your device. For that, you need to pass deviceGuid in method and isActive in the request body. In isActive, send true to activate your device and false to deactivate your device. When you deactivate your device, this will also release your device from Azure IoT Hub, even if the device is acquired.
         /// </summary>
@@ -596,7 +596,7 @@ namespace IoTConnect.DeviceProvider
                     ErrorItemModel errorItemModel = new ErrorItemModel()
                     {
                         Message = "Parent Device Guid is required",
-                        Param = "Device Guid"   
+                        Param = "Device Guid"
                     };
                     errorItemModels.Add(errorItemModel);
                     return new DataResponse<List<AllChildDeviceResult>>(null)
@@ -622,13 +622,13 @@ namespace IoTConnect.DeviceProvider
                 {
                     data = result.Data,
                     message = result.Message,
-                    status = true                   
+                    status = true
                 };
             }
             catch (IoTConnectException ex)
             {
                 List<ErrorItemModel> errorItemModels = new List<ErrorItemModel>();
-                
+
                 errorItemModels.AddRange(ex.error);
 
                 return new DataResponse<List<AllChildDeviceResult>>(null)
@@ -680,7 +680,7 @@ namespace IoTConnect.DeviceProvider
                 {
                     data = result.Data,
                     message = result.Message,
-                    status = true                    
+                    status = true
                 };
             }
             catch (IoTConnectException ex)
@@ -710,7 +710,7 @@ namespace IoTConnect.DeviceProvider
         ///  <param name="deviceGuid">Device Identifier.</param>
         /// <param name="request">Paging Model.</param>
         /// <returns></returns>
-        public async Task<DataResponse<List<DeviceGrantResult>>> DeviceGrant(string deviceGuid,PagingModel pagingModel)
+        public async Task<DataResponse<List<DeviceGrantResult>>> DeviceGrant(string deviceGuid, PagingModel pagingModel)
         {
             try
             {
@@ -824,7 +824,7 @@ namespace IoTConnect.DeviceProvider
         /// </summary>
         /// <param name="request">Add Grant model.</param>
         /// <returns></returns>
-        public async Task<DataResponse<AddDeviceGrantResult>> AddGrant(string deviceGuid,AddGrantModel request)
+        public async Task<DataResponse<AddDeviceGrantResult>> AddGrant(string deviceGuid, AddGrantModel request)
         {
             try
             {
@@ -931,7 +931,7 @@ namespace IoTConnect.DeviceProvider
         /// </summary>
         /// <param name="request">Allotted Device User Model.</param>
         /// <returns></returns>
-        public async Task<DataResponse<AllottedDeviceToUserResult>> AllottedDeviceToUser(string userId,AllottedDeviceUserModel request)
+        public async Task<DataResponse<AllottedDeviceToUserResult>> AllottedDeviceToUser(string userId, AllottedDeviceUserModel request)
         {
             try
             {
@@ -1029,7 +1029,7 @@ namespace IoTConnect.DeviceProvider
         /// <param name="pagingModel">paging model.</param>
         /// <param name="userGuid">User Identifier.</param>
         /// <returns></returns>
-        public async Task<DataResponse<AllotedDeviceResult>> GetSingleAllottedDevice(string userGuid,PagingModel pagingModel)
+        public async Task<DataResponse<AllotedDeviceResult>> GetSingleAllottedDevice(string userGuid, PagingModel pagingModel)
         {
             try
             {
@@ -1150,6 +1150,97 @@ namespace IoTConnect.DeviceProvider
             return await formattedUrl.WithHeaders(new { Content_type = Constants.contentType, Authorization = Constants.bearerTokenType + _token })
                                      .SetQueryParams(new { companyGuid = companyGuid })
                                      .GetJsonAsync<DataResponse<List<DeviceCounterResult>>>();
+        }
+
+        public async Task<DataResponse<List<DeviceCounterByEntityResult>>> GetDeviceCounterByEntity(string entityGuid)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(entityGuid))
+                {
+                    List<ErrorItemModel> errorItemModels = new List<ErrorItemModel>();
+                    ErrorItemModel errorItemModel = new ErrorItemModel()
+                    {
+                        Message = "Entity Guid is required",
+                        Param = "EntityGuid"
+                    };
+                    errorItemModels.Add(errorItemModel);
+                    return new DataResponse<List<DeviceCounterByEntityResult>>(null)
+                    {
+                        errorMessages = errorItemModels,
+                        status = false
+                    };
+                }
+                var portalApi = await _ioTConnectAPIDiscovery.GetPortalUrl(_envCode, _solutionKey, IoTConnectBaseURLType.DeviceBaseUrl);
+                string accessTokenUrl = string.Concat(portalApi, DeviceApi.DeviceCounterByEntity);
+                string formattedUrl = String.Format(accessTokenUrl, Constants.deviceVersion);
+                return await formattedUrl.WithHeaders(new { Content_type = Constants.contentType, Authorization = Constants.bearerTokenType + _token })
+                                         .SetQueryParams(new { entity = entityGuid, recursive = true })
+                                         .GetJsonAsync<DataResponse<List<DeviceCounterByEntityResult>>>();
+            }
+            catch (IoTConnectException ex)
+            {
+                List<ErrorItemModel> errorItemModels = new List<ErrorItemModel>();
+                errorItemModels.AddRange(ex.error);
+                return new DataResponse<List<DeviceCounterByEntityResult>>(null)
+                {
+                    errorMessages = errorItemModels,
+                    message = ex.message,
+                    status = false
+                };
+            }
+
+        }
+
+        public async Task<DataResponse<List<DeviceTelemetryData>>> GetTelemetryData(string deviceGuid)
+        {
+            var portalApi = await _ioTConnectAPIDiscovery.GetPortalUrl(_envCode, _solutionKey, IoTConnectBaseURLType.TelemetryBaseUrl);
+            string accessTokenUrl = string.Concat(portalApi, DeviceApi.TelemetryData);
+            string formattedUrl = String.Format(accessTokenUrl, Constants.deviceVersion, deviceGuid);
+            return await formattedUrl.WithHeaders(new { Content_type = Constants.contentType, Authorization = Constants.bearerTokenType + _token })
+                                     .SetQueryParams(new { companyGuid = deviceGuid })
+                                     .GetJsonAsync<DataResponse<List<DeviceTelemetryData>>>();
+        }
+
+        public async Task<DataResponse<List<DeviceConnectionStatus>>> GetConnectionStatus(string uniqueId)
+        {
+
+
+            try
+            {
+                if (string.IsNullOrEmpty(uniqueId))
+                {
+                    List<ErrorItemModel> errorItemModels = new List<ErrorItemModel>();
+                    ErrorItemModel errorItemModel = new ErrorItemModel()
+                    {
+                        Message = "UniqueId required",
+                        Param = "UniqueId"
+                    };
+                    errorItemModels.Add(errorItemModel);
+                    return new DataResponse<List<DeviceConnectionStatus>>(null)
+                    {
+                        errorMessages = errorItemModels,
+                        status = false
+                    };
+                }
+                var portalApi = await _ioTConnectAPIDiscovery.GetPortalUrl(_envCode, _solutionKey, IoTConnectBaseURLType.DeviceBaseUrl);
+                string accessTokenUrl = string.Concat(portalApi, DeviceApi.ConnectionStatus);
+                string formattedUrl = String.Format(accessTokenUrl, Constants.deviceVersion, uniqueId);
+                return await formattedUrl.WithHeaders(new { Content_type = Constants.contentType, Authorization = Constants.bearerTokenType + _token })
+                                         .GetJsonAsync<DataResponse<List<DeviceConnectionStatus>>>();
+            }
+            catch (IoTConnectException ex)
+            {
+
+                List<ErrorItemModel> errorItemModels = new List<ErrorItemModel>();
+                errorItemModels.AddRange(ex.error);
+                return new DataResponse<List<DeviceConnectionStatus>>(null)
+                {
+                    errorMessages = errorItemModels,
+                    message = ex.message,
+                    status = false
+                };
+            }
         }
         #endregion
     }

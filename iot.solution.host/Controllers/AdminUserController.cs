@@ -12,6 +12,7 @@ using iot.solution.service.Interface;
 using Entity = iot.solution.entity;
 using Response = iot.solution.entity.Response;
 using AutoMapper.Configuration;
+using iot.solution.host.Filter;
 //using component.common.model;
 namespace iot.solution.host.Controllers
 {
@@ -36,7 +37,6 @@ namespace iot.solution.host.Controllers
             var searchRequest = new SearchRequest()
             {
                 SearchText = searchText,
-                //CompanyId = "895019CF-1D3E-420C-828F-8971253E5784",
                 CompanyId = Convert.ToString(component.helper.SolutionConfiguration.CompanyId),
                 PageNumber = pageNo.Value,
                 OrderBy = orderBy,
@@ -50,9 +50,9 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.SearchResult<List<Entity.UserResponse>>>(false, ex.Message);
             }
-
             return response;
         }
 
@@ -72,6 +72,7 @@ namespace iot.solution.host.Controllers
             {
                 response.IsSuccess = false;
                 response.Message = ex.Message.ToString();
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.UserResponse>(false, ex.Message);
             }
             return response;
@@ -79,12 +80,13 @@ namespace iot.solution.host.Controllers
 
         [HttpGet]
         [Route(AdminRoute.Route.GetById, Name = AdminRoute.Name.GetById)]
-        public Entity.BaseResponse<Entity.AdminUserResponse> Get(Guid id)
+        [EnsureGuidParameterAttribute("id", "Admin User")]
+        public Entity.BaseResponse<Entity.AdminUserResponse> Get(string id)
         {
             Entity.BaseResponse<Entity.AdminUserResponse> response = new BaseResponse<AdminUserResponse>(true);
             try
             {
-                response.Data = _adminUserService.Get(id);
+                response.Data = _adminUserService.Get(Guid.Parse(id));
                 if(response.Data == null)
                 {
                     response.IsSuccess = false;
@@ -99,6 +101,7 @@ namespace iot.solution.host.Controllers
             catch (Exception ex)
             {
                 response.IsSuccess = false;
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.AdminUserResponse>(false, ex.Message);
             }
 
@@ -107,19 +110,21 @@ namespace iot.solution.host.Controllers
 
         [HttpPut]
         [Route(AdminRoute.Route.Delete, Name = AdminRoute.Name.Delete)]
-        public Entity.BaseResponse<UserResponse> Delete(Guid id)
+        [EnsureGuidParameterAttribute("id", "Admin User")]
+        public Entity.BaseResponse<UserResponse> Delete(string id)
         {
             Entity.BaseResponse<UserResponse> response = new Entity.BaseResponse<UserResponse>(true);
 
             try
             {
-                var status = _adminUserService.Delete(id);
+                var status = _adminUserService.Delete(Guid.Parse(id));
                 response.IsSuccess = true;
                 response.Message = status.Message;
                 response.Data = status.Data;
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<UserResponse>(false, ex.Message);
             }
 
@@ -128,13 +133,14 @@ namespace iot.solution.host.Controllers
 
         [HttpPut]
         [Route(AdminRoute.Route.UpdateStatus, Name = AdminRoute.Name.UpdateStatus)]
-        public Entity.BaseResponse<bool> UpdateStatus(Guid id, bool status)
+        [EnsureGuidParameterAttribute("id", "Admin User")]
+        public Entity.BaseResponse<bool> UpdateStatus(string id, bool status)
         {
             Entity.BaseResponse<bool> response = new Entity.BaseResponse<bool>(true);
 
             try
             {
-                var result = _adminUserService.UpdateStatus(id, status);
+                var result = _adminUserService.UpdateStatus(Guid.Parse(id), status);
 
                 if (result.Success)
                 {
@@ -151,6 +157,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<bool>(false, ex.Message);
             }
 
@@ -173,6 +180,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<AdminUserResponse>(false, ex.Message);
             }
 

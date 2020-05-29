@@ -1,4 +1,5 @@
 ﻿using iot.solution.entity.Structs.Routes;
+using iot.solution.host.Filter;
 using iot.solution.service.Interface;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -30,6 +31,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.LookupItem>>(false, ex.Message);
             }
             return response;
@@ -61,6 +63,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.LookupItem>>(false, ex.Message);
             }
             return response;
@@ -68,6 +71,7 @@ namespace host.iot.solution.Controllers
 
         [HttpGet]
         [Route(LookupRoute.Route.GetAttributesIoT, Name = LookupRoute.Name.GetAttributesIoT)]
+
         public Entity.BaseResponse<List<Entity.KitTypeAttribute>> GetAttributesFromIoT(string templateGuid)
         {
             Entity.BaseResponse<List<Entity.KitTypeAttribute>> response = new Entity.BaseResponse<List<Entity.KitTypeAttribute>>(true);
@@ -77,6 +81,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.KitTypeAttribute>>(false, ex.Message);
             }
             return response;
@@ -93,6 +98,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.LookupItem>>(false, ex.Message);
             }
             return response;
@@ -109,6 +115,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.LookupItem>>(false, ex.Message);
             }
             return response;
@@ -118,15 +125,18 @@ namespace host.iot.solution.Controllers
        
         [HttpGet]
         [Route(LookupRoute.Route.GetSensorsLookup, Name = LookupRoute.Name.GetSensorsLookup)]
-        public Entity.BaseResponse<List<Entity.LookupItem>> GetSensorsLookup(Guid templateId, Guid deviceId)
+        [EnsureGuidParameterAttribute("templateId", "Kit Type")]
+        [EnsureGuidParameterAttribute("deviceId", "Kit Type")]
+        public Entity.BaseResponse<List<Entity.LookupItem>> GetSensorsLookup(string templateId, string deviceId)
         {
             Entity.BaseResponse<List<Entity.LookupItem>> response = new Entity.BaseResponse<List<Entity.LookupItem>>(true);
             try
             {
-                response.Data = _service.GetSensors(templateId, deviceId);
+                response.Data = _service.GetSensors(Guid.Parse(templateId), Guid.Parse(deviceId));
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.LookupItem>>(false, ex.Message);
             }
             return response;
@@ -142,6 +152,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.LookupItem>>(false, ex.Message);
             }
             return response;
@@ -158,7 +169,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
-               
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.LookupItem>>(false, ex.Message);
             }
             return response;

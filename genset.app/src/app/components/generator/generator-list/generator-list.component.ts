@@ -49,7 +49,7 @@ export class GeneratorListComponent implements OnInit {
 	}
 
 	clickAdd() {
-		this.router.navigate(['/generator/add']);
+		this.router.navigate(['/generators/add']);
 	}
 
 	setOrder(sort: any) {

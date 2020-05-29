@@ -78,6 +78,10 @@
                        *ngIf="genraterForm.controls['kitcode'].errors.required && checkSubmitStatus">
                       Please enter Kit Code
                     </p>
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="genraterForm.controls['kitcode'].errors.pattern && checkSubmitStatus">
+                      Special characters not allowed in Kit Code
+                    </p>
                   </div>
                 </mat-form-field>
               </fieldset>
@@ -95,7 +99,7 @@
                     </p>
                     <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
                        *ngIf="genraterForm.controls['uniqueId'].errors.pattern && checkSubmitStatus">
-                      Please enter valid Unique ID
+                       Special characters and white space not allowed in unique ID
                     </p>
                   </div>
                 </mat-form-field>
@@ -125,16 +129,33 @@
               </fieldset>
             </div>
 
-            <div class="col-md-4">
-              <fieldset class="form-group" style="padding-top: 32px;">
-                <input formControlName="imageFile" (change)="handleImageInput($event)" class="upload-image" type="file" accept="image/png, image/jpeg, image/jpg" />
-                <div class="form-control-feedback" *ngIf="genraterForm.controls['imageFile'].errors">
-                  <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+            <div class="col-md-6">
+              <mat-label>Generator Image</mat-label>
+              <fieldset class="form-group">
+                <label for="myFile" class="upload-file">
+                  <input formControlName="imageFile" id="myFile" #myFile  (change)="handleImageInput($event)" class="upload-image" type="file" accept=".jpg, .jpeg, .png" />
+                  <div class="form-control-feedback" *ngIf="genraterForm.controls['imageFile'].errors">
+                    <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
                      *ngIf="genraterForm.controls['imageFile'].errors.required && checkSubmitStatus">
-                    Upload Image
-                  </p>
-                </div>
+                        Upload Image
+                    </p>
+                  </div>
+                </label>
               </fieldset>
+              <fieldset class="form-group">
+                <ul class="image-list ">
+                  <li>
+                    <div class="user-profle-image">
+                      <img alt="" class="img-fluid"
+                        src="{{fileUrl == '00000000-0000-0000-0000-000000000000' || fileUrl == null || fileUrl == '' ? _appConstant.noImg:  fileUrl}}" />
+                    </div>
+                    <span *ngIf="fileUrl">
+                      <i class="material-icons" (click)="imageRemove()">clear</i>
+                    </span>
+                  </li>
+                </ul>
+              </fieldset> 
+              <p>{{fileName}}</p>
             </div>
 
           </div>

@@ -97,6 +97,14 @@ export class DashboardComponent implements OnInit {
 		this.getAlertList();
 	}
 
+	getLocalDate(lDate) {
+		var utcDate = moment.utc(lDate, 'YYYY-MM-DDTHH:mm:ss.SSS');
+		// Get the local version of that date
+		var localDate = moment(utcDate).local();
+		let res = moment(localDate).format('MMM DD, YYYY hh:mm:ss A');
+		return res;
+		
+		}
 	getAlertList() {
 		this.spinner.show();
 		let parameters = {
@@ -131,7 +139,7 @@ export class DashboardComponent implements OnInit {
 					data.push(['generator', 'Bettery Status']);
 
 					response.data.forEach(element => {
-						data.push([element.name, parseInt(element['value'])]);
+						data.push([element.month, parseFloat(element['value'])]);
 					});
 					this.createHistoryChart('generaytorBatteryStatus', data, 'Generator', '% Percentage');
 				} else {
@@ -155,8 +163,11 @@ export class DashboardComponent implements OnInit {
 		this.chart[key] = {
 			chartType: 'ColumnChart',
 			dataTable: data,
-			options: {
+      options: {
+        bar: { groupWidth: "25%" },
+        colors: ['#5496d0'],
 				height: height,
+				legend: {position: 'none'},
 				width: this.chartWidth,
 				interpolateNulls: true,
 				backgroundColor: this.bgColor,
@@ -178,10 +189,10 @@ export class DashboardComponent implements OnInit {
 	}
 
 	clickAdd() {
-		this.router.navigate(['location/add']);
+		this.router.navigate(['locations/add']);
 	}
 	clickDetail(id) {
-		this.router.navigate(['location-detail', id]);
+		this.router.navigate(['locations/location-detail', id]);
 	}
 	convertToFloat(value) {
 		return parseFloat(value)

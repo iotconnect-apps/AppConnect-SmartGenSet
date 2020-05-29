@@ -16,7 +16,7 @@ namespace host.iot.solution.Controllers
     public class ChartController : BaseController
     {
         private readonly IChartService _chartService;
-        
+
         public ChartController(IChartService chartService)
         {
             _chartService = chartService;
@@ -26,29 +26,32 @@ namespace host.iot.solution.Controllers
         public Entity.BaseResponse<List<Response.GeneratorUsageResponse>> GeneratorUsage(Request.ChartRequest request)
         {
             Entity.BaseResponse<List<Response.GeneratorUsageResponse>> response = new Entity.BaseResponse<List<Response.GeneratorUsageResponse>>(true);
-            response.Data = _chartService.GetGeneratorUsage(request);
-            return response;
-        }
-        [HttpPost]
-        [Route(ChartRoute.Route.EnergyUsage, Name = ChartRoute.Name.EnergyUsage)]
-        public Entity.BaseResponse<List<Response.EnergyUsageResponse>> EnergyUsage(Request.ChartRequest request)
-        {
-            Entity.BaseResponse<List<Response.EnergyUsageResponse>> response = new Entity.BaseResponse<List<Response.EnergyUsageResponse>>(true);
-            response.Data = _chartService.GetEnergyUsage(request);
+            try
+            {
+                response = _chartService.GetGeneratorUsage(request);
+                response.IsSuccess = true;
+            }
+            catch (Exception ex)
+            {
+                base.LogException(ex);
+                return new Entity.BaseResponse<List<Response.GeneratorUsageResponse>>(false, ex.Message);
+            }
             return response;
         }
 
         [HttpPost]
         [Route(ChartRoute.Route.EnergyGenerated, Name = ChartRoute.Name.EnergyGenerated)]
-        public Entity.BaseResponse<List<Response.EnergyUsageResponse>> EnergyGenerated(Request.ChartRequest request)
+        public Entity.BaseResponse<List<Response.EnergyUsageResponse>> GetEnergyGenerated(Request.ChartRequest request)
         {
             Entity.BaseResponse<List<Response.EnergyUsageResponse>> response = new Entity.BaseResponse<List<Response.EnergyUsageResponse>>(true);
             try
             {
-                response.Data = _chartService.GetEnergyGenerated(request);
+                response = _chartService.GetEnergyGenerated(request);
+                response.IsSuccess = true;
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Response.EnergyUsageResponse>>(false, ex.Message);
             }
             return response;
@@ -56,15 +59,17 @@ namespace host.iot.solution.Controllers
 
         [HttpPost]
         [Route(ChartRoute.Route.FuelUsage, Name = ChartRoute.Name.FuelUsage)]
-        public Entity.BaseResponse<List<Response.FuelUsageResponse>> FuelUsage(Request.ChartRequest request)
+        public Entity.BaseResponse<List<Response.FuelUsageResponse>> GetFuelUsage(Request.ChartRequest request)
         {
             Entity.BaseResponse<List<Response.FuelUsageResponse>> response = new Entity.BaseResponse<List<Response.FuelUsageResponse>>(true);
             try
             {
-                response.Data = _chartService.GetFuelUsage(request);
+                response = _chartService.GetFuelUsage(request);
+                response.IsSuccess = true;
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Response.FuelUsageResponse>>(false, ex.Message);
             }
             return response;
@@ -77,10 +82,12 @@ namespace host.iot.solution.Controllers
             Entity.BaseResponse<List<Response.GeneratorBatteryStatusResponse>> response = new Entity.BaseResponse<List<Response.GeneratorBatteryStatusResponse>>(true);
             try
             {
-                response.Data = _chartService.GetGeneratorBatteryStatus(request);
+                response = _chartService.GetGeneratorBatteryStatus(request);
+                response.IsSuccess = true;
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Response.GeneratorBatteryStatusResponse>>(false, ex.Message);
             }
             return response;

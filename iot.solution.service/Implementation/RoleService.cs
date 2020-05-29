@@ -6,7 +6,7 @@ using iot.solution.service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-//using LogHandler = component.services.loghandler;
+using LogHandler = component.services.loghandler;
 using System.Reflection;
 using Entity = iot.solution.entity;
 using IOT = IoTConnect.Model;
@@ -19,10 +19,10 @@ namespace iot.solution.service.Data
     {
         private readonly IRoleRepository _roleRepository;
         private readonly IotConnectClient _iotConnectClient;
-        private readonly ILogger _logger;
+        private readonly LogHandler.Logger _logger;
         private readonly IUserRepository _userRepository;
 
-        public RoleService(IRoleRepository userRoleRepository, ILogger logger, IUserRepository userRepository)
+        public RoleService(IRoleRepository userRoleRepository, LogHandler.Logger logger, IUserRepository userRepository)
         {
             _logger = logger;
             _roleRepository = userRoleRepository;

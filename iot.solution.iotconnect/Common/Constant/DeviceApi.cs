@@ -7,6 +7,7 @@ namespace IoTConnect.Common.Constant
         internal const string UniqDevice = "api/v{0}/Device/uniqueId/{1}";
         internal const string DeviceEntity = "api/v{0}/entity/{1}/device";
         internal const string DeviceCounter = "api/v{0}/Device/counters";
+        internal const string DeviceCounterByEntity = "api/v{0}/Device/statistic";
         internal const string DeviceCompany = "api/v{0}/company/{1}/device";
         internal const string Add = "api/v{0}/Device";
         internal const string Update = "api/v{0}/Device/{1}";
@@ -24,5 +25,8 @@ namespace IoTConnect.Common.Constant
         internal const string AllottedDeviceUser = "api/v{0}/Device/user/{1}/grant";
         internal const string GetAllottedDeviceUser = "api/v{0}/Device/user";
         internal const string SingleAllottedDeviceUser = "api/v{0}/Device/user/{1}";
+
+        internal const string TelemetryData = "api/v{0}/Telemetry/device/{1}";
+        internal const string ConnectionStatus = "api/v{0}/Device/connection-status?uniqueId={1}";
     }
 }

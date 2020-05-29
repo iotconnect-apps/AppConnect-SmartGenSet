@@ -1,4 +1,5 @@
 ﻿using iot.solution.entity.Structs.Routes;
+using iot.solution.host.Filter;
 using iot.solution.service.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -46,9 +47,10 @@ namespace host.iot.solution.Controllers
 
         [HttpGet]
         [Route(LocationRoute.Route.GetById, Name = LocationRoute.Name.GetById)]
-        public Entity.BaseResponse<Entity.Location> Get(Guid id)
+        [EnsureGuidParameterAttribute("id", "Location")]
+        public Entity.BaseResponse<Entity.Location> Get(string id)
         {
-            if (id == null || id == Guid.Empty)
+            if (id == null || Guid.Parse(id) == Guid.Empty)
             {
                 return new Entity.BaseResponse<Entity.Location>(false, "Invalid Request");
             }
@@ -56,7 +58,7 @@ namespace host.iot.solution.Controllers
             Entity.BaseResponse<Entity.Location> response = new Entity.BaseResponse<Entity.Location>(true);
             try
             {
-                response.Data = _service.Get(id);
+                response.Data = _service.Get(Guid.Parse(id));
 
                 //response.Data.TotalDisconnectedGenerators = 1;
                 //response.Data.TotalEneryGenerated = 3000;
@@ -64,12 +66,38 @@ namespace host.iot.solution.Controllers
                 //response.Data.TotalGenerators = _generatorService.Get()?;
                 //response.Data.TotalOffGenerators = 1;
                 //response.Data.TotalOnConnectedGenerators = 3;
-                response.Data.Generators = _generatorService.GetLocationWiseGenerators(id);
+                response.Data.Generators = _generatorService.GetLocationWiseGenerators(Guid.Parse(id));
                 
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.Location>(false, ex.Message);
+            }
+            return response;
+        }
+
+        [HttpGet]
+        [Route(LocationRoute.Route.GetLocationStatics, Name = LocationRoute.Name.GetLocationStatics)]
+        [EnsureGuidParameterAttribute("locationId", "Location")]
+        public Entity.BaseResponse<Entity.LocationStaticsResponse> GetLocationStatics(string locationId)
+        {
+            if (locationId == null || Guid.Parse(locationId) == Guid.Empty)
+            {
+                return new Entity.BaseResponse<Entity.LocationStaticsResponse>(false, "Invalid Request");
+            }
+
+            Entity.BaseResponse<Entity.LocationStaticsResponse> response = new Entity.BaseResponse<Entity.LocationStaticsResponse>(true);
+            try
+            {
+               
+                response = _service.GetLocationStatics(Guid.Parse(locationId));
+
+            }
+            catch (Exception ex)
+            {
+                base.LogException(ex);
+                return new Entity.BaseResponse<Entity.LocationStaticsResponse>(false, ex.Message);
             }
             return response;
         }
@@ -99,6 +127,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Guid>(false, ex.Message);
             }
             return response;
@@ -106,9 +135,10 @@ namespace host.iot.solution.Controllers
 
         [HttpPut]
         [Route(LocationRoute.Route.Delete, Name = LocationRoute.Name.Delete)]
-        public Entity.BaseResponse<bool> Delete(Guid id)
+        [EnsureGuidParameterAttribute("id", "Location")]
+        public Entity.BaseResponse<bool> Delete(string id)
         {
-            if (id == null || id == Guid.Empty)
+            if (id == null || Guid.Parse(id) == Guid.Empty)
             {
                 return new Entity.BaseResponse<bool>(false, "Invalid Request");
             }
@@ -116,13 +146,14 @@ namespace host.iot.solution.Controllers
             Entity.BaseResponse<bool> response = new Entity.BaseResponse<bool>(true);
             try
             {
-                var status = _service.Delete(id);
+                var status = _service.Delete(Guid.Parse(id));
                 response.IsSuccess = status.Success;
                 response.Message = status.Message;
                 response.Data = status.Success;
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<bool>(false, ex.Message);
             }
             return response;
@@ -145,6 +176,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.SearchResult<List<Entity.LocationWithCounts>>>(false, ex.Message);
             }
             return response;
@@ -152,18 +184,20 @@ namespace host.iot.solution.Controllers
 
         [HttpPost]
         [Route(LocationRoute.Route.UpdateStatus, Name = LocationRoute.Name.UpdateStatus)]
-        public Entity.BaseResponse<bool> UpdateStatus(Guid id, bool status)
+        [EnsureGuidParameterAttribute("id", "Location")]
+        public Entity.BaseResponse<bool> UpdateStatus(string id, bool status)
         {
             Entity.BaseResponse<bool> response = new Entity.BaseResponse<bool>(true);
             try
             {
-                Entity.ActionStatus result = _service.UpdateStatus(id, status);
+                Entity.ActionStatus result = _service.UpdateStatus(Guid.Parse(id), status);
                 response.IsSuccess = result.Success;
                 response.Message = result.Message;
                 response.Data = result.Success;
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<bool>(false, ex.Message);
             }
             return response;

@@ -7,7 +7,7 @@ namespace iot.solution.service.Interface
     public interface IDashboardService
     {
         List<Entity.LookupItem> GetLocationLookup(Guid companyId);
-        Entity.DashboardOverviewResponse GetOverview();
+        Entity.BaseResponse<Entity.DashboardOverviewResponse> GetOverview();
         
     }
 }

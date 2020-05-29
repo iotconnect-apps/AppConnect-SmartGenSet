@@ -134,6 +134,8 @@ BEGIN
 						,[eventDate]
 						,[uniqueId]	
 						,[severity]	
+						,[entityName]
+						,[deviceName]
 				FROM #temp_alerts
 				WHERE rowNum BETWEEN ((@pageNumber - 1) * @pageSize) + 1 AND (@pageSize * @pageNumber)
 			END
@@ -145,6 +147,8 @@ BEGIN
 						,[eventDate]
 						,[uniqueId]	
 						,[severity]	
+						,[entityName]
+						,[deviceName]
 				FROM #temp_alerts
 			END
 

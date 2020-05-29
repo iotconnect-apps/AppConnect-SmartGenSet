@@ -17,6 +17,7 @@ namespace iot.solution.entity.Structs.Routes
             public const string ChildDevice = "location.childdevicelist";
             public const string ValidateKit = "location.validatekit";
             public const string ProvisionKit = "location.provisionkit";
+            public const string GetLocationStatics = "location.getlocationstatics";
         }
 
         public struct Route
@@ -29,7 +30,8 @@ namespace iot.solution.entity.Structs.Routes
             public const string UpdateStatus = "updatestatus/{id}/{status}";
             public const string BySearch = "search";
             public const string ChildDevice = "childdevicelist";
-          
+            public const string GetLocationStatics = "getlocationstatics/{locationId}";
+
         }
     }
 }

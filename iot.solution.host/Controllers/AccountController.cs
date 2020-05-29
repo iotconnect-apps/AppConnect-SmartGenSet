@@ -45,6 +45,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.LoginResponse>(false, ex.Message);
             }
             return response;
@@ -62,6 +63,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.LoginResponse>(false, ex.Message);
             }
             return response;
@@ -82,6 +84,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<bool>(false, ex.Message);
             }
             return response;
@@ -151,6 +154,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.LoginResponse>(false, ex.Message);
             }
             return response;

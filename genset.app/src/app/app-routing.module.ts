@@ -29,7 +29,7 @@ const appRoutes: Routes = [
 				canActivate: [AuthService]
 			},
 			{
-        		path: 'subscriber/:email/:productCode/:companyId',
+        		path: 'subscribers/:email/:productCode/:companyId',
 				component: SubscriberDetailComponent,
 				canActivate: [AuthService]
 			},
@@ -39,17 +39,24 @@ const appRoutes: Routes = [
 				canActivate: [AuthService]
 			},
 			{
+				path: 'hardwarekits/bulkupload',
+						component: BulkuploadAddComponent,
+						canActivate: [AuthService]
+					},
+			{
 				path: 'hardwarekits',
 				component: HardwareListComponent,
 				canActivate: [AuthService]
 			},
+		
 			{
-				path: 'hardwarekit/add',
+				path: 'hardwarekits/add',
 				component: HardwareAddComponent,
 				canActivate: [AuthService]
 			},
+			
 			{
-				path: 'hardwarekit/:hardwarekitGuid',
+				path: 'hardwarekits/:hardwarekitGuid',
 				component: HardwareAddComponent,
 				canActivate: [AuthService]
 			},
@@ -59,20 +66,16 @@ const appRoutes: Routes = [
 				canActivate: [AuthService]
 			},
 			{
-				path: 'user/add',
+				path: 'users/add',
 				component: AdminUserAddComponent,
 				canActivate: [AuthService]
 			},
 			{
-				path: 'user/:userGuid',
+				path: 'users/:userGuid',
 				component: AdminUserAddComponent,
 				canActivate: [AuthService]
 			},
-			{
-        path: 'bulkupload',
-				component: BulkuploadAddComponent,
-				canActivate: [AuthService]
-			}
+
 		]
 	},
 	{
@@ -109,17 +112,17 @@ const appRoutes: Routes = [
 		canActivate: [AdminAuthGuired]
 	},
 	{
-		path: 'location/add',
+		path: 'locations/add',
 		component: LocationAddComponent,
     canActivate: [AdminAuthGuired]
 	},
 	{
-		path: 'location/:locationGuid',
+		path: 'locations/:locationGuid',
 		component: LocationAddComponent,
     canActivate: [AdminAuthGuired]
 	},
 	{
-		path: 'location-detail/:locationGuid',
+		path: 'locations/location-detail/:locationGuid',
 		component: LocationDetailComponent,
     canActivate: [AdminAuthGuired]
 	},
@@ -129,26 +132,26 @@ const appRoutes: Routes = [
 		canActivate: [AdminAuthGuired]
 	},
 	{
-		path: 'generator/add',
+		path: 'generators/add',
 		component: GeneratorAddComponent,
     canActivate: [AdminAuthGuired]
 	},
 	{
-		path: 'generator/:generatorGuid',
+		path: 'generators/:generatorGuid',
 		component: GeneratorAddComponent,
     canActivate: [AdminAuthGuired]
 	},
 	{
-		path: 'generatordetails/:generatordetailGuid',
+		path: 'generators/generatordetails/:generatordetailGuid',
 		component: GeneratorDetailComponent,
 		canActivate: [AdminAuthGuired]
 	},
     {
-		path: 'user/:userGuid',
+		path: 'users/:userGuid',
 		component: UserAddComponent,
 		canActivate: [AdminAuthGuired]
 	}, {
-		path: 'user/add',
+		path: 'users/add',
 		component: UserAddComponent,
 		canActivate: [AdminAuthGuired]
 	}, {

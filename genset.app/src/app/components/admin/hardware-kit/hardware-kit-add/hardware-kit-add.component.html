@@ -24,6 +24,10 @@
                        *ngIf="deviceForm.controls['kitCode'].errors.required && checkSubmitStatus">
                       Please enter H/W Kit ID
                     </p>
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                    *ngIf="deviceForm.controls['kitCode'].errors.pattern && checkSubmitStatus">
+                    Special characters  not allowed in H/W Kit ID
+                 </p>
                   </div>
                 </mat-form-field>
               </fieldset>
@@ -65,7 +69,7 @@
                     </p>
                     <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
                        *ngIf="deviceForm.controls['uniqueId'].errors.pattern && checkSubmitStatus">
-                      Please enter valid Unique ID
+                       Special characters and white space not allowed in unique ID
                     </p>
                   </div>
                 </mat-form-field>

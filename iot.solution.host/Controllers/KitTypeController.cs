@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using host.iot.solution.Controllers;
 using iot.solution.entity.Structs.Routes;
+using iot.solution.host.Filter;
 using iot.solution.service.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +33,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.KitType>>(false, ex.Message);
             }
             return response;
@@ -39,15 +41,17 @@ namespace iot.solution.host.Controllers
 
         [HttpGet]
         [Route(KitTypeRoute.Route.GetTypeDetail, Name = KitTypeRoute.Name.GetTypeDetail)]
-        public Entity.BaseResponse<Entity.KitType> GetTypeDetail(Guid templateId)
+        [EnsureGuidParameterAttribute("templateId", "Kit Type")]
+        public Entity.BaseResponse<Entity.KitType> GetTypeDetail(string templateId)
         {
             Entity.BaseResponse<Entity.KitType> response = new Entity.BaseResponse<Entity.KitType>(true);
             try
             {
-                response.Data = _service.GetAllKitTypeDetail(templateId);
+                response.Data = _service.GetAllKitTypeDetail(Guid.Parse(templateId));
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.KitType>(false, ex.Message);
             }
             return response;
@@ -55,15 +59,17 @@ namespace iot.solution.host.Controllers
 
         [HttpGet]
         [Route(KitTypeRoute.Route.GetAttributes, Name = KitTypeRoute.Name.GetAttributes)]
-        public Entity.BaseResponse<List<Entity.KitTypeAttribute>> GetAttributes(Guid templateId)
+        [EnsureGuidParameterAttribute("templateId", "Kit Type")]
+        public Entity.BaseResponse<List<Entity.KitTypeAttribute>> GetAttributes(string templateId)
         {
             Entity.BaseResponse<List<Entity.KitTypeAttribute>> response = new Entity.BaseResponse<List<Entity.KitTypeAttribute>>(true);
             try
             {
-                response.Data = _service.GetKitTypeAttributes(templateId);
+                response.Data = _service.GetKitTypeAttributes(Guid.Parse(templateId));
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.KitTypeAttribute>>(false, ex.Message);
             }
             return response;

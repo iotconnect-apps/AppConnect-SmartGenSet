@@ -1,7 +1,8 @@
 ﻿/*******************************************************************
 DECLARE @count INT
-     ,@output INT = 0
-	,@fieldName				nvarchar(255)	
+    ,@output INT = 0
+	,@fieldName	nvarchar(255)
+	,@syncDate	DATETIME
 EXEC [dbo].[Chart_FuelUsed]	
 	@entityguid	= '415C8959-5BFC-4203-A493-F89458AE7736'
 	--@guid	= '46B0B123-D4BB-4DE2-ABB2-D15BC854B39D'
@@ -9,8 +10,9 @@ EXEC [dbo].[Chart_FuelUsed]
 	,@version		= 'v1'              
 	,@output		= @output		OUTPUT
 	,@fieldname		= @fieldName	OUTPUT	
+	,@syncDate		= @syncDate		OUTPUT
 
-SELECT @output status, @fieldName fieldName
+SELECT @output status, @fieldName fieldName, @syncDate syncDate
 
 001	SG-18 16-03-2020 [Nishit Khakhi]	Added Initial Version to represent Fuel Used
 
@@ -23,6 +25,7 @@ CREATE PROCEDURE [dbo].[Chart_FuelUsed]
 	,@version			nvarchar(10)              
 	,@output			SMALLINT			OUTPUT
 	,@fieldname			nvarchar(255)		OUTPUT
+	,@syncDate			DATETIME			OUTPUT
 	,@culture			nvarchar(10)		= 'en-Us'	
 	,@enabledebuginfo	CHAR(1)				= '0'
 )
@@ -44,26 +47,52 @@ BEGIN
 	    ) 
 	    INSERT INTO DebugInfo(data, dt) VALUES(Convert(nvarchar(MAX), @Param), GETUTCDATE())
     END                    
-    
+    DECLARE @startDate DATETIME, @endDate DATETIME
+	IF OBJECT_ID ('tempdb..#months') IS NOT NULL BEGIN DROP TABLE #months END
+		CREATE TABLE [#months] ([date] DATETIME)
+
+		INSERT INTO [#months]
+		SELECT CONVERT(DATE, DATEADD(Month, (T.i - 11), GETUTCDATE())) AS [Date]
+		FROM (VALUES (11), (10), (9), (8), (7), (6), (5), (4), (3), (2), (1), (0)) AS T(i)
+
+		SELECT @startDate = MIN(CONVERT(DATE, [Date] - DAY([Date]) + 1)), @endDate = MAX(CONVERT(DATE,EOMONTH([Date])))
+		FROM [#months]
+
+	IF OBJECT_ID ('tempdb..#result') IS NOT NULL BEGIN DROP TABLE #result END
+	CREATE TABLE #result ([year] INT, [month] TINYINT, [localName] NVARCHAR(1000), [value] DECIMAL(18,2))
+
     BEGIN TRY            
 		IF @guid IS NOT NULL
 		BEGIN
-			SELECT CONVERT(NVARCHAR(3),[date],100) AS [month],[gensetGuid]  AS [guid],[attribute],SUM([sum]) AS [value]
-			FROM [dbo].[TelemetrySummary_Daywise]
-			WHERE [gensetGuid] = @guid AND [attribute] = 'fuellevel'
-			GROUP BY CONVERT(NVARCHAR(3),[date],100),[gensetGuid],[attribute]
+			INSERT INTO #result
+			SELECT DATEPART(YY,[date]),DATEPART(MM,[date]),[attribute], SUM([sum]) AS [value]
+			FROM [dbo].[TelemetrySummary_Hourwise]
+			WHERE [gensetGuid] = @guid ANd ([date] BETWEEN @startDate AND @endDate) AND [attribute] = 'fuelUsed'
+			GROUP BY DATEPART(YY,[date]),DATEPART(MM,[date]),[attribute]
 		END
 		ELSE IF @entityguid IS NOT NULL
 		BEGIN
-			SELECT CONVERT(NVARCHAR(3),[date],100) AS [month],H.[locationGuid]  AS [guid],[attribute],SUM([sum]) AS [value]
-			FROM [dbo].[TelemetrySummary_Daywise] T (NOLOCK)
-			INNER JOIN [dbo].[HardwareKit] H (NOLOCK) ON T.[gensetGuid] = H.[guid] AND H.[isDeleted] = 0
-			WHERE H.[locationGuid] = @entityguid AND [attribute] = 'fuellevel'
-			GROUP BY CONVERT(NVARCHAR(3),[date],100),H.[locationGuid],[attribute]
+			INSERT INTO #result
+			SELECT DATEPART(YY,[date]),DATEPART(MM,[date]),[attribute], SUM([sum]) AS [value]
+			FROM [dbo].[TelemetrySummary_Hourwise] T (NOLOCK)
+			INNER JOIN [dbo].[Generator] H (NOLOCK) ON T.[gensetGuid] = H.[guid] AND H.[isDeleted] = 0
+			WHERE H.[locationGuid] = @entityguid ANd ([date] BETWEEN @startDate AND @endDate) AND [attribute] = 'fuelUsed'
+			GROUP BY DATEPART(YY,[date]),DATEPART(MM,[date]),[attribute]
 		END
+
+		SELECT SUBSTRING(DATENAME(MONTH, M.[date]), 1, 3) + '-' + FORMAT(M.[date],'yy') AS [month]
+				, ISNULL(R.[value],0) [value]
+		FROM [#months] M
+		LEFT OUTER JOIN #result R ON R.[Month] = DATEPART(MM, M.[date]) AND R.[Year] = DATEPART(YY, M.[date]) 
+		ORDER BY  M.[date]
+
+		--SELECT [month],[localName],[value]
+		--FROM #result
+		--ORDER BY [YY],[MM]
 
         SET @output = 1
 		SET @fieldname = 'Success'   
+		SET @syncDate = (SELECT TOP 1 CONVERT(DATETIME,[value]) FROM dbo.[Configuration] (NOLOCK) WHERE [configKey] = 'telemetry-last-exectime')
               
 	END TRY	
 	BEGIN CATCH	

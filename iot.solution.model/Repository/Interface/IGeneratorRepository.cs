@@ -20,5 +20,6 @@ namespace iot.solution.model.Repository.Interface
         Entity.ActionStatus DeleteMediaFiles(Guid generatorId,Guid? fileId);
         List<Entity.GeneratorFiles> GetMediaFiles(Guid generatorId);
         List<LookupItem> GetGeneratorLookup();
+        Entity.BaseResponse<List<Response.GeneratorDetailResponse>> GetGeneratorStatics(Guid generatorId);
     }
 }

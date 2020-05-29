@@ -1,8 +1,8 @@
-﻿
-/*******************************************************************
+﻿/*******************************************************************
 DECLARE @count INT
      ,@output INT = 0
-	,@fieldName				nvarchar(255)	
+	,@fieldName	varchar(255)
+	,@syncDate	DATETIME
 EXEC [dbo].[Chart_GeneratorBatteryStatus]	
 	-- @companyguid	= '415C8959-5BFC-4203-A493-F89458AE7736'
 	@entityguid	= '415C8959-5BFC-4203-A493-F89458AE7736'
@@ -11,8 +11,9 @@ EXEC [dbo].[Chart_GeneratorBatteryStatus]
 	,@version		= 'v1'              
 	,@output		= @output		OUTPUT
 	,@fieldname		= @fieldName	OUTPUT	
+	,@syncDate		= @syncDate		OUTPUT
 
-SELECT @output status, @fieldName fieldName
+SELECT @output status, @fieldName fieldName, @syncDate syncDate
 
 001	SG-18 16-03-2020 [Nishit Khakhi]	Added Initial Version to represent Generator Battery Status
 
@@ -25,6 +26,7 @@ CREATE PROCEDURE [dbo].[Chart_GeneratorBatteryStatus]
 	,@version			nvarchar(10)              
 	,@output			SMALLINT			OUTPUT
 	,@fieldname			nvarchar(255)		OUTPUT
+	,@syncDate			DATETIME			OUTPUT
 	,@culture			nvarchar(10)		= 'en-Us'	
 	,@enabledebuginfo	CHAR(1)				= '0'
 )
@@ -51,31 +53,32 @@ BEGIN
     BEGIN TRY            
 		IF @guid IS NOT NULL
 		BEGIN
-			SELECT CONVERT(NVARCHAR(3),[date],100) AS [month],[gensetGuid]  AS [guid],[attribute],AVG([sum]) AS [value]
-			FROM [dbo].[TelemetrySummary_Daywise]
-			WHERE [gensetGuid] = @guid AND [attribute] = 'batvolt'
-			GROUP BY CONVERT(NVARCHAR(3),[date],100),[gensetGuid],[attribute]
+			SELECT H.[name] AS [month], MAX([latest]) AS [value]
+			FROM [dbo].[TelemetrySummary_Hourwise] T (NOLOCK)
+			INNER JOIN [dbo].[Generator] H (NOLOCK) ON T.[gensetGuid] = H.[guid] AND H.[isDeleted] = 0
+			WHERE [gensetGuid] = @guid AND [attribute] = 'battlevel'
+			GROUP BY H.[name]
 		END
 		ELSE IF @entityguid IS NOT NULL
 		BEGIN
-			SELECT CONVERT(NVARCHAR(3),[date],100) AS [month],H.[locationGuid]  AS [guid],[attribute],AVG([sum]) AS [value]
-			FROM [dbo].[TelemetrySummary_Daywise] T (NOLOCK)
-			INNER JOIN [dbo].[HardwareKit] H (NOLOCK) ON T.[gensetGuid] = H.[guid] AND H.[isDeleted] = 0
-			WHERE H.[locationGuid] = @entityguid AND [attribute] = 'batvolt'
-			GROUP BY CONVERT(NVARCHAR(3),[date],100),H.[locationGuid],[attribute]
+			SELECT H.[name] AS [month], MAX([latest]) AS [value]
+			FROM [dbo].[TelemetrySummary_Hourwise] T (NOLOCK)
+			INNER JOIN [dbo].[Generator] H (NOLOCK) ON T.[gensetGuid] = H.[guid] AND H.[isDeleted] = 0
+			WHERE H.[locationGuid] = @entityguid AND [attribute] = 'battlevel'
+			GROUP BY H.[name]
 		END
 		ELSE IF @companyguid IS NOT NULL
 		BEGIN
-			SELECT CONVERT(NVARCHAR(3),[date],100) AS [month],H.[companyGuid] AS [guid],[attribute],AVG([sum]) AS [value]
-			FROM [dbo].[TelemetrySummary_Daywise] T (NOLOCK)
-			INNER JOIN [dbo].[HardwareKit] H (NOLOCK) ON T.[gensetGuid] = H.[guid] AND H.[isDeleted] = 0
-			WHERE H.[companyGuid] = @companyguid AND [attribute] = 'batvolt'
-			GROUP BY CONVERT(NVARCHAR(3),[date],100),H.[companyGuid],[attribute]
+			SELECT H.[name] AS [month], MAX([latest]) AS [value]
+			FROM [dbo].[TelemetrySummary_Hourwise] T (NOLOCK)
+			INNER JOIN [dbo].[Generator] H (NOLOCK) ON T.[gensetGuid] = H.[guid] AND H.[isDeleted] = 0
+			WHERE H.[companyGuid] = @companyguid AND [attribute] = 'battlevel'
+			GROUP BY H.[name]
 		END
 
         SET @output = 1
 		SET @fieldname = 'Success'   
-              
+        SET @syncDate = (SELECT TOP 1 CONVERT(DATETIME,[value]) FROM dbo.[Configuration] (NOLOCK) WHERE [configKey] = 'telemetry-last-exectime')
 	END TRY	
 	BEGIN CATCH	
 		DECLARE @errorReturnMessage nvarchar(MAX)

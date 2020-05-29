@@ -8,6 +8,6 @@ namespace iot.solution.model.Repository.Interface
 {
     public interface IDashboardRepository:IGenericRepository<Model.Generator>
     {
-        public List<Entity.DashboardOverviewResponse> GetStatistics();
+        public Entity.BaseResponse<List<Entity.DashboardOverviewResponse>> GetStatistics();
     }
 }

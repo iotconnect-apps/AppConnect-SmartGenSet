@@ -8,15 +8,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Entity = iot.solution.entity;
 using Model = iot.solution.model.Models;
+using LogHandler = component.services.loghandler;
+using System.Reflection;
 
 namespace iot.solution.service.Data
 {
     public class CompanyService : ICompanyService
     {
         private readonly ICompanyRepository _companyRepository;
-        private readonly ILogger _logger;
+        private readonly LogHandler.Logger _logger;
 
-        public CompanyService(ICompanyRepository companyRepository, ILogger logManager)
+        public CompanyService(ICompanyRepository companyRepository, LogHandler.Logger logManager)
         {
             _companyRepository = companyRepository;
             _logger = logManager;
@@ -31,7 +33,7 @@ namespace iot.solution.service.Data
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "CompanyManager.GetCompany" + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "CompanyManager.GetCompany" + ex);
             }
             return result;
         }
@@ -52,7 +54,8 @@ namespace iot.solution.service.Data
                     actionStatus = _companyRepository.Manage(request);
                     actionStatus.Data = Mapper.Configuration.Mapper.Map<Model.Company, Entity.Company>(actionStatus.Data);
                     if (!actionStatus.Success)
-                        _logger.Error($"Company is not added in solution database, Error: {actionStatus.Message}");
+                    _logger.ErrorLog(new Exception($"Company is not added in solution database, Error: {actionStatus.Message}")
+                               , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                 }
                 else
                 {
@@ -66,12 +69,13 @@ namespace iot.solution.service.Data
                     actionStatus = _companyRepository.Manage(request);
                     actionStatus.Data = Mapper.Configuration.Mapper.Map<Model.Company, Entity.Company>(actionStatus.Data);
                     if (!actionStatus.Success)
-                        _logger.Error($"Company is not added in solution database, Error: {actionStatus.Message}");
+                    _logger.ErrorLog(new Exception($"Company is not added in solution database, Error: {actionStatus.Message}")
+                               , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "Company.InsertCompany " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "Company.InsertCompany " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
@@ -93,7 +97,7 @@ namespace iot.solution.service.Data
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "Company.Delete " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "Company.Delete " + ex);
                 return new Entity.ActionStatus
                 {
                     Success = false,
@@ -122,7 +126,7 @@ namespace iot.solution.service.Data
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "CompanyService.Delete " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "CompanyService.Delete " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }

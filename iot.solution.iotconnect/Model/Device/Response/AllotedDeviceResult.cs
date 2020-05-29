@@ -101,4 +101,36 @@ namespace IoTConnect.Model
         public int available { get; set; }
         public int total { get; set; }
     }
+
+    public class DeviceTelemetryData
+    {
+        public string templateAttributeGuid { get; set; }
+        public string attributeName { get; set; }
+        public string attributeValue { get; set; }
+        public DateTime deviceUpdatedDate { get; set; }
+        public int notificationCount { get; set; }
+        public int? aggregateType { get; set; }
+        public string DataType { get; set; }
+        public object aggregateTypeValues { get; set; }
+    }
+
+    public class DeviceCounterByEntityResult
+    {
+        public Counters counters { get; set; }
+    }
+
+    public class Counters
+    {
+        public int active { get; set; }
+        public int inActive { get; set; }
+        public int connected { get; set; }
+        public int disConnected { get; set; }
+        public int acquired { get; set; }
+        public int available { get; set; }
+        public int total { get; set; }
+    }
+    public class DeviceConnectionStatus
+    {
+        public bool IsConnected { get; set; }
+    }
 }

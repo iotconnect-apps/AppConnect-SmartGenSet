@@ -8,6 +8,7 @@ using System.Data.Common;
 using Entity = iot.solution.entity;
 using component.logger;
 using component.helper;
+using System.Linq;
 
 namespace iot.solution.model.Repository.Implementation
 {
@@ -19,9 +20,9 @@ namespace iot.solution.model.Repository.Implementation
             _logger = logManager;
             _uow = unitOfWork;
         }
-        public List<Entity.DashboardOverviewResponse> GetStatistics()
+        public Entity.BaseResponse<List<Entity.DashboardOverviewResponse>> GetStatistics()
         {
-            List<Entity.DashboardOverviewResponse> result = new List<Entity.DashboardOverviewResponse>();
+            Entity.BaseResponse<List<Entity.DashboardOverviewResponse>> result = new Entity.BaseResponse<List<Entity.DashboardOverviewResponse>>();
             try
             {
                 _logger.Information(Constants.ACTION_ENTRY, "GeneratorRepository.Get");
@@ -29,10 +30,13 @@ namespace iot.solution.model.Repository.Implementation
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(SolutionConfiguration.CurrentUserId, SolutionConfiguration.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("guid", SolutionConfiguration.CompanyId, DbType.Guid, ParameterDirection.Input));
+                    parameters.Add(sqlDataAccess.CreateParameter("syncDate", DateTime.UtcNow, DbType.DateTime, ParameterDirection.Output));
                     DbDataReader dbDataReader = sqlDataAccess.ExecuteReader(sqlDataAccess.CreateCommand("[CompanyStatistics_Get]", CommandType.StoredProcedure, null), parameters.ToArray());
-                    // DataUtils.DataReaderToObject(dbDataReader, result);
-                    result = DataUtils.DataReaderToList<Entity.DashboardOverviewResponse>(dbDataReader, null);
-
+                    result.Data = DataUtils.DataReaderToList<Entity.DashboardOverviewResponse>(dbDataReader, null);
+                    if (parameters.Where(p => p.ParameterName.Equals("syncDate")).FirstOrDefault() != null)
+                    {
+                        result.LastSyncDate = Convert.ToString(parameters.Where(p => p.ParameterName.Equals("syncDate")).FirstOrDefault().Value);
+                    }
                 }
                 _logger.Information(Constants.ACTION_EXIT, "GeneratorRepository.Get");
             }

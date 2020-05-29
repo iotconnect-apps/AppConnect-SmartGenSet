@@ -38,6 +38,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<string>(false, ex.Message);
             }
             return response;
@@ -54,6 +55,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Response.CountryResponse>(false, ex.Message);
             }
             return response;
@@ -70,6 +72,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new BaseResponse<Response.StateResponse>(false, ex.Message);
             }
             return response;
@@ -86,6 +89,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new BaseResponse<Response.TimezoneResponse>(false, ex.Message);
             }
             return response;
@@ -102,6 +106,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new BaseResponse<Response.SubscriptionPlanResponse>(false, ex.Message);
             }
             return response;
@@ -124,6 +129,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new BaseResponse<Entity.SaveCompanyResponse>(false, ex.Message);
             }
 
@@ -148,6 +154,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.SearchResult<List<Entity.SubscriberData>>>(false, ex.Message);
             }
             return response;
@@ -164,6 +171,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new BaseResponse<Entity.SubsciberCompanyDetails>(false, ex.Message);
             }
             return response;
@@ -190,6 +198,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new BaseResponse<Entity.SearchResult<List<Entity.HardwareKitResponse>>>(false, ex.Message);
             }
             return response;
@@ -206,6 +215,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new BaseResponse<Entity.LastSyncResponse>(false, ex.Message);
             }
             return response;

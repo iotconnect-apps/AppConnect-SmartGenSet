@@ -302,31 +302,20 @@
                                   </div> -->
                         </li>
                         <!-- </ng-scrollbar> -->
-                        <li>
+                        <li *ngFor="let featureValueDeatil of data?.features;">
                           <div class="feature-name-text text-left">
                             <p class="feature-icon-holder">
-                              <span> Messages</span></p>
+                              <span> {{featureValueDeatil.displayName}}</span></p>
                           </div>
-                          <div class="feature-name-value text-right d-flex flex-wrap align-items-center">
-                            <p class="decimal m-0"> {{data.features[0]['featureValue']/1000}}K/day</p>
+                          <div *ngIf="featureValueDeatil.displayName === 'Messages'"
+                            class="feature-name-value text-right d-flex flex-wrap align-items-center">
+                            <p class="decimal m-0">
+                              {{featureValueDeatil.featureValue/1000}}K/day</p>
                           </div>
-                        </li>
-                        <li>
-                          <div class="feature-name-text text-left">
-                            <p class="feature-icon-holder">
-                              <span> Devices</span></p>
-                          </div>
-                          <div class="feature-name-value text-right d-flex flex-wrap align-items-center">
-                            <p class="decimal m-0"> {{data.features[1]['featureValue']}}</p>
-                          </div>
-                        </li>
-                        <li>
-                          <div class="feature-name-text text-left">
-                            <p class="feature-icon-holder">
-                              <span> Users</span></p>
-                          </div>
-                          <div class="feature-name-value text-right d-flex flex-wrap align-items-center">
-                            <p class="decimal m-0"> {{data.features[2]['featureValue']}}</p>
+                          <div *ngIf="featureValueDeatil.displayName !== 'Messages'"
+                            class="feature-name-value text-right d-flex flex-wrap align-items-center">
+                            <p class="decimal m-0">
+                              {{featureValueDeatil.featureValue}}</p>
                           </div>
                         </li>
                       </ul>

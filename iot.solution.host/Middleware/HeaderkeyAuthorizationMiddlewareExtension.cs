@@ -30,9 +30,12 @@ namespace host.iot.solution.Middleware
             {
 
                 if (context.Request.Path.Value.Equals("/")
+                    || context.Request.Path.Value.Contains("/api/account/FilePath")
                     || context.Request.Path.Value.Contains("/api/account/refreshtoken")
                     || context.Request.Path.Value.Contains("/api/subscriber")
                     || context.Request.Path.Value.Contains("/api/account/login")
+                    || context.Request.Path.Value.StartsWith("/wwwroot/")
+                    || context.Request.Path.Value.Contains("/api/alert/addiotalert")
                     || context.Request.Path.Value.Contains("/api/account/adminlogin")) // Nikunj
                 {
                     await _next.Invoke(context);

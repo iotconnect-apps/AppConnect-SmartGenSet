@@ -15,6 +15,7 @@ using Entity = iot.solution.entity;
 using IOT = IoTConnect.Model;
 using Model = iot.solution.model.Models;
 using Response = iot.solution.entity.Response;
+using LogHandler = component.services.loghandler;
 
 namespace iot.solution.service.Implementation
 {
@@ -24,8 +25,8 @@ namespace iot.solution.service.Implementation
         private readonly IHardwareKitRepository _hardwareKitRepository;
         private readonly ILookupService _lookupService;
         private readonly IotConnectClient _iotConnectClient;
-        private readonly ILogger _logger;
-        public GeneratorService(IGeneratorRepository generatorRepository, ILookupService lookupService, IHardwareKitRepository hardwareKitRepository, ILogger logger)
+        private readonly LogHandler.Logger _logger;
+        public GeneratorService(IGeneratorRepository generatorRepository, ILookupService lookupService, IHardwareKitRepository hardwareKitRepository, LogHandler.Logger logger)
         {
             _logger = logger;
             _generatorRepository = generatorRepository;
@@ -42,7 +43,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "GeneratorService.Get " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "GeneratorService.Get " + ex);
                 return null;
             }
         }
@@ -62,22 +63,29 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "GeneratorService.Get " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "GeneratorService.Get " + ex);
                 return null;
             }
         }
-        public Response.GeneratorDetailResponse GetGeneratorDetail(Guid generatorId)
+        public Entity.BaseResponse<Response.GeneratorDetailResponse> GetGeneratorDetail(Guid generatorId)
         {
-            return new Response.GeneratorDetailResponse()
+            Entity.BaseResponse <List<Response.GeneratorDetailResponse>> listResult = new Entity.BaseResponse<List<Response.GeneratorDetailResponse>>();
+            Entity.BaseResponse <Response.GeneratorDetailResponse> result = new Entity.BaseResponse<Response.GeneratorDetailResponse>();
+            try
             {
-                Engine = 2700,
-                Current = 73,
-                Voltage = 15,
-                FuelLevel = 62,
-                EngineOilLevel = 3800,
-                BatteryStatus = 100
-            };
-
+                listResult = _generatorRepository.GetGeneratorStatics(generatorId);
+                if (listResult.Data.Count > 0)
+                {
+                    result.IsSuccess = true;
+                    result.Data = listResult.Data[0];
+                    result.LastSyncDate = listResult.LastSyncDate;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, ex);
+            }
+            return result;
         }
         public Entity.ActionStatus UploadFiles(List<Microsoft.AspNetCore.Http.IFormFile> files, string generatorId)
         {
@@ -124,7 +132,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "GeneratorService.UploadFiles " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "GeneratorService.UploadFiles " + ex);
                 return new Entity.ActionStatus
                 {
                     Success = false,
@@ -170,12 +178,13 @@ namespace iot.solution.service.Implementation
                                 actionStatus.Data = (Guid)(actionStatus.Data);
                                 if (!actionStatus.Success)
                                 {
-                                    _logger.Error($"Generator is not added in solution database, Error: {actionStatus.Message}");
+                                    _logger.ErrorLog(new Exception($"Generator is not added in solution database, Error: {actionStatus.Message}")
+                               , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                                     var deleteEntityResult = _iotConnectClient.Device.Delete(request.Guid.Value.ToString()).Result;
                                     if (deleteEntityResult != null && deleteEntityResult.status)
                                     {
-                                        _logger.Error($"Generator is not deleted from iotconnect");
-
+                                        _logger.ErrorLog(new Exception($"Generator is not deleted from iotconnect, Error: {actionStatus.Message}")
+                               , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                                         actionStatus.Success = false;
                                         actionStatus.Message = new UtilityHelper().IOTResultMessage(deleteEntityResult.errorMessages);
                                     }
@@ -209,7 +218,7 @@ namespace iot.solution.service.Implementation
                     }
                     else
                     {
-                        _logger.Error($"Generator KitCode or UniqueId is not valid");
+                        _logger.InfoLog($"Generator KitCode or UniqueId is not valid");
                         actionStatus.Data = Guid.Empty;
                         actionStatus.Success = false;
                         actionStatus.Message = "Generator KitCode or UniqueId is not valid!";
@@ -222,9 +231,11 @@ namespace iot.solution.service.Implementation
                     {
                         throw new NotFoundCustomException($"{CommonException.Name.NoRecordsFound} : Generator");
                     }
+                   
                     var updateDeviceResult = _iotConnectClient.Device.Update(request.Guid.ToString(), Mapper.Configuration.Mapper.Map<IOT.UpdateDeviceModel>(request)).Result;
                     if (updateDeviceResult != null && updateDeviceResult.status)
                     {
+                        string existingImage = olddbDevice.Image;
                         if (request.ImageFile != null)
                         {
                             if (File.Exists(SolutionConfiguration.UploadBasePath + dbGenerator.Image) && request.ImageFile.Length > 0)
@@ -240,7 +251,7 @@ namespace iot.solution.service.Implementation
                         }
                         else
                         {
-                            //dbGreenHouse.Image = uniqGreenhouse.Image;
+                            dbGenerator.Image = existingImage;
                         }
                         dbGenerator.CreatedDate = olddbDevice.CreatedDate;
                         dbGenerator.CreatedBy = olddbDevice.CreatedBy;
@@ -252,14 +263,16 @@ namespace iot.solution.service.Implementation
                         actionStatus.Data = (Guid)(actionStatus.Data);
                         if (!actionStatus.Success)
                         {
-                            _logger.Error($"Generator is not updated in solution database, Error: {actionStatus.Message}");
+                            _logger.ErrorLog(new Exception($"Generator is not updated in solution database, Error: {actionStatus.Message}")
+                             , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                             actionStatus.Success = false;
                             actionStatus.Message = "Something Went Wrong!";
                         }
                     }
                     else
                     {
-                        _logger.Error($"Generator is not updated in iotconnect, Error: {updateDeviceResult.message}");
+                        _logger.ErrorLog(new Exception($"Generator is not updated in iotconnect, Error: {actionStatus.Message}")
+                             , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                         actionStatus.Success = false;
                         actionStatus.Message = new UtilityHelper().IOTResultMessage(updateDeviceResult.errorMessages);
 
@@ -268,7 +281,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "GeneratorService.Manage " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "GeneratorService.Manage " + ex);
                 return new Entity.ActionStatus
                 {
                     Success = false,
@@ -299,7 +312,8 @@ namespace iot.solution.service.Implementation
                 }
                 else
                 {
-                    _logger.Error($"Generator is not deleted from iotconnect, Error: {deleteEntityResult.message}");
+                    _logger.ErrorLog(new Exception($"Generator is not deleted from iotconnect, Error: {actionStatus.Message}")
+                             , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                     actionStatus.Success = false;
                     actionStatus.Message = new UtilityHelper().IOTResultMessage(deleteEntityResult.errorMessages);
                 }
@@ -307,7 +321,53 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "GeneratorService.Delete " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "GeneratorService.Delete " + ex);
+                actionStatus.Success = false;
+                actionStatus.Message = ex.Message;
+            }
+            return actionStatus;
+        }
+        public Entity.ActionStatus DeleteImage(Guid id)
+        {
+            Entity.ActionStatus actionStatus = new Entity.ActionStatus(false);
+            try
+            {
+                var dbEntity = _generatorRepository.FindBy(x => x.Guid.Equals(id)).FirstOrDefault();
+                if (dbEntity == null)
+                {
+                    throw new NotFoundCustomException($"{CommonException.Name.NoRecordsFound} : Device");
+                }
+
+                bool deleteStatus = DeleteGeneratorImage(id, dbEntity.Image);
+                if (deleteStatus)
+                {
+                    dbEntity.Image = "";
+                    dbEntity.UpdatedDate = DateTime.Now;
+                    dbEntity.UpdatedBy = SolutionConfiguration.CurrentUserId;
+                    dbEntity.CompanyGuid = SolutionConfiguration.CompanyId;
+
+                    actionStatus = _generatorRepository.Manage(dbEntity);
+                    actionStatus.Data = dbEntity.Guid;
+                    actionStatus.Success = true;
+                    actionStatus.Message = "Image deleted successfully!";
+                    if (!actionStatus.Success)
+                    {
+                        _logger.ErrorLog(new Exception($"Device is not updated in database, Error: {actionStatus.Message}")
+                            , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+                        actionStatus.Success = false;
+                        actionStatus.Message = actionStatus.Message;
+                    }
+                }
+                else
+                {
+                    actionStatus.Success = false;
+                    actionStatus.Message = "Image not deleted!";
+                }
+                return actionStatus;
+            }
+            catch (Exception ex)
+            {
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "DeviceManager.DeleteImage " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
@@ -328,7 +388,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "GeneratorService.DeleteMediaFile " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "GeneratorService.DeleteMediaFile " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
@@ -355,14 +415,15 @@ namespace iot.solution.service.Implementation
                 }
                 else
                 {
-                    _logger.Error($"Generator status is not updated in iotconnect, Error: {updatedbStatusResult.message}");
+                    _logger.ErrorLog(new Exception($"Generator status is not updated in iotconnect, Error: {actionStatus.Message}")
+                            , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                     actionStatus.Success = false;
                     actionStatus.Message = new UtilityHelper().IOTResultMessage(updatedbStatusResult.errorMessages);
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "GeneratorService.UpdateStatus " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "GeneratorService.UpdateStatus " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
@@ -390,7 +451,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "DeviceService.AcquireDevice " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "DeviceService.AcquireDevice " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
@@ -409,7 +470,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, $"GeneratorService.List, Error: {ex.Message}");
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, $"GeneratorService.List, Error: {ex.Message}");
                 return new Entity.SearchResult<List<Entity.Generator>>();
             }
         }
@@ -421,7 +482,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, $"GeneratorService.GetLocationWiseGenerators, Error: {ex.Message}");
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, $"GeneratorService.GetLocationWiseGenerators, Error: {ex.Message}");
                 return null;
             }
         }
@@ -433,7 +494,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, $"GeneratorService.GetLocationChildDevices, Error: {ex.Message}");
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, $"GeneratorService.GetLocationChildDevices, Error: {ex.Message}");
                 return null;
             }
         }
@@ -446,7 +507,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, $"GeneratorService.ValidateKit, Error: {ex.Message}");
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, $"GeneratorService.ValidateKit, Error: {ex.Message}");
                 return null;
             }
 
@@ -496,11 +557,12 @@ namespace iot.solution.service.Implementation
                         });
                         if (!actionStatus.Success)
                         {
-                            _logger.Error($"Generator is not added in solution database, Error: {actionStatus.Message}");
+                            _logger.ErrorLog(new Exception($"Generator is not added in solution database, Error: {actionStatus.Message}")
+                           , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                             var deleteEntityResult = _iotConnectClient.Device.Delete(newDeviceId.ToString()).Result;
                             if (deleteEntityResult != null && deleteEntityResult.status)
                             {
-                                _logger.Error($"Generator is not deleted from iotconnect");
+                                _logger.InfoLog($"Generator is not deleted from iotconnect");
                                 actionStatus.Success = false;
                                 actionStatus.Message = new UtilityHelper().IOTResultMessage(deleteEntityResult.errorMessages);
                             }
@@ -519,7 +581,8 @@ namespace iot.solution.service.Implementation
                     }
                     else
                     {
-                        _logger.Error($"Kit is not added in iotconnect, Error: {addDeviceResult.message}");
+                        _logger.ErrorLog(new Exception($"Kit is not added in iotconnect, Error: {addDeviceResult.message}")
+                           , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                         result.IsSuccess = false;
                         result.Message = new UtilityHelper().IOTResultMessage(addDeviceResult.errorMessages);
                     }
@@ -532,13 +595,11 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, $"GeneratorService.ProvisionKit, Error: {ex.Message}");
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, $"GeneratorService.ProvisionKit, Error: {ex.Message}");
                 return null;
             }
             return result;
         }
-
-
         public Entity.BaseResponse<Entity.DeviceCounterResult> GetDeviceCounters()
         {
             Entity.BaseResponse<Entity.DeviceCounterResult> result = new Entity.BaseResponse<Entity.DeviceCounterResult >(true);
@@ -557,9 +618,88 @@ namespace iot.solution.service.Implementation
             }
             return result;
         }
+        public Entity.BaseResponse<List<Entity.DeviceTelemetryDataResult>> GetTelemetryData(Guid generatorId)
+        {
+            Entity.BaseResponse<List<Entity.DeviceTelemetryDataResult>> result = new Entity.BaseResponse<List<Entity.DeviceTelemetryDataResult>>(true);
+            try
+            {
+                IOT.DataResponse<List<IOT.DeviceTelemetryData>> deviceCounterResult = _iotConnectClient.Device.GetTelemetryData(generatorId.ToString()).Result;
+                if (deviceCounterResult != null && deviceCounterResult.status)
+                {
+                    result.Data = deviceCounterResult.data.Select(d => Mapper.Configuration.Mapper.Map<Entity.DeviceTelemetryDataResult>(d)).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorLog(ex, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+                return new Entity.BaseResponse<List<Entity.DeviceTelemetryDataResult>>(false, ex.Message);
+            }
+            return result;
+        }
+
+        public Entity.BaseResponse<Entity.DeviceCounterByEntityResult> GetDeviceCountersByEntity(Guid entityGuid)
+        {
+            Entity.BaseResponse<Entity.DeviceCounterByEntityResult> result = new Entity.BaseResponse<Entity.DeviceCounterByEntityResult>(true);
+            try
+            {
+                IOT.DataResponse<List<IOT.DeviceCounterByEntityResult>> deviceCounterResult = _iotConnectClient.Device.GetDeviceCounterByEntity(entityGuid.ToString()).Result;
+                if (deviceCounterResult != null && deviceCounterResult.status)
+                {
+                    result.Data = Mapper.Configuration.Mapper.Map<Entity.DeviceCounterByEntityResult>(deviceCounterResult.data.FirstOrDefault());
+                }
+                else
+                {
+                    result.Data = null;
+                    result.IsSuccess = false;
+                    result.Message = new UtilityHelper().IOTResultMessage(deviceCounterResult.errorMessages);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorLog(ex, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+                return new Entity.BaseResponse<Entity.DeviceCounterByEntityResult>(false, ex.Message);
+            }
+            return result;
+        }
+
+        public Entity.BaseResponse<Entity.DeviceConnectionStatusResult> GetConnectionStatus(string uniqueId)
+        {
+            Entity.BaseResponse<Entity.DeviceConnectionStatusResult> result = new Entity.BaseResponse<Entity.DeviceConnectionStatusResult>(true);
+            try
+            {
+                IOT.DataResponse<List<IOT.DeviceConnectionStatus>> deviceConnectionStatus = _iotConnectClient.Device.GetConnectionStatus(uniqueId).Result;
+                if (deviceConnectionStatus != null && deviceConnectionStatus.status && deviceConnectionStatus.data != null)
+                {
+                    result.Data = Mapper.Configuration.Mapper.Map<Entity.DeviceConnectionStatusResult>(deviceConnectionStatus.data.FirstOrDefault());
+                }
+                else
+                {
+                    result.Data = null;
+                    result.IsSuccess = false;
+                    result.Message = new UtilityHelper().IOTResultMessage(deviceConnectionStatus.errorMessages);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorLog(ex, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+                return new Entity.BaseResponse<Entity.DeviceConnectionStatusResult>(false, ex.Message);
+            }
+            return result;
+        }
 
 
         #region private methods
+        // Delete Image on Server   
+        private bool DeleteGeneratorImage(Guid guid, string imageName)
+        {
+            var fileBasePath = SolutionConfiguration.UploadBasePath + SolutionConfiguration.CompanyFilePath;
+            var filePath = Path.Combine(fileBasePath, imageName);
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+            return true;
+        }
         private string SaveGeneratorImage(Guid guid, IFormFile image)
         {
             var fileBasePath = SolutionConfiguration.UploadBasePath + SolutionConfiguration.CompanyFilePath;

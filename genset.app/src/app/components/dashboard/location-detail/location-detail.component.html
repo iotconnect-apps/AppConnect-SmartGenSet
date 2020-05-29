@@ -19,13 +19,7 @@
                                 <div class="connected-disconnected-data-wrapper">
                                     <div class="connected-disconnected-data-item">
                                         <div class="connected-disconnected-data text-green">
-                                            {{totalOnConnectedGenerators? totalOnConnectedGenerators : 'N/A'}}</div>
-                                        <div class="connected-disconnected-desc">On</div>
-                                    </div>
-                                    <div class="connected-disconnected-data-item">
-                                        <div class="connected-disconnected-data text-red">
-                                            {{totalOffGenerators ? totalOffGenerators : 'N/A' }}</div>
-                                        <div class="connected-disconnected-desc">off</div>
+                                            {{totalOnConnectedGenerators? totalOnConnectedGenerators : '0'}}</div>
                                     </div>
                                 </div>
                             </div>
@@ -34,7 +28,7 @@
                                 <div class="connected-disconnected-data-wrapper">
                                     <div class="connected-disconnected-data-item">
                                         <div class="connected-disconnected-data text-red">
-                                            {{totalDisconnectedGenerators ? totalDisconnectedGenerators : 'N/A' }}</div>
+                                            {{totalDisconnectedGenerators ? totalDisconnectedGenerators : '0' }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -46,21 +40,21 @@
                     <div class="dashboard-chart-item">
                         <div class="topwidget-icon"><img src="../../../../assets/images/icon-energy.svg"></div>
                         <p>Total Energy <br /> Generated (kWh) (Today)</p>
-                        <h4>{{totalEneryGenerated ? totalEneryGenerated: 'N/A' }}</h4>
+                        <h4>{{totalEneryGenerated ? totalEneryGenerated: '0' }}</h4>
                     </div>
                 </div>
                 <div class="dashboard-chart topwidget-4">
                     <div class="dashboard-chart-item">
                         <div class="topwidget-icon"><img src="../../../../assets/images/icon-fuel.svg"></div>
                         <p>Total Fuel <br /> Used (Gal) (Today)</p>
-                        <h4>{{totalFuelUsed ? totalFuelUsed : 'N/A' }}</h4>
+                        <h4>{{totalFuelUsed ? totalFuelUsed : '0' }}</h4>
                     </div>
                 </div>
 
             </div>
             <div class="row">
                 <div class="col-xl-8 m-b-30">
-                    <div class="drag-body dashboard-widget">
+                    <div class="drag-body dashboard-widget m-b-30">
                         <div class="panel-heading">
                             <h5 class="panel-title"> Energy Generated </h5>
                         </div>
@@ -92,9 +86,9 @@
                     </div>
                 </div>
                 <div class="col-xl-4 m-b-30">
-                    <div class="drag-body dashboard-widget">
+                    <div class="drag-body dashboard-widget m-b-30">
                         <div class="panel-heading">
-                            <h5 class="panel-title">Generator Battery Status </h5>
+                            <h5 class="panel-title w-100">Generator Battery Status </h5>
                         </div>
                         <mat-card class="dashboard-card mat-card">
                             <!-- <img style="height: 300px;" src="../../../../assets/images/bar-graph-lg-2.jpg"  /> -->
@@ -107,9 +101,10 @@
                             </div>
                         </mat-card>
                     </div>
+
                     <div class="drag-body dashboard-widget">
                         <div class="panel-heading">
-                            <h5 class="panel-title">Generator Usage Break up in 24hrs </h5>
+                            <h5 class="panel-title w-100">Generator Usage Break up in 24hrs </h5>
                         </div>
                         <mat-card class="dashboard-card mat-card">
                             <!-- <img style="height: 300px;" src="../../../../assets/images/bar-graph-lg-2.jpg"  /> -->
@@ -140,7 +135,7 @@
                 <mat-card class="dashboard-card mat-card pt-0">
                     <ul style="min-height: 813px;" class="alerts-dashboard max-height-initial">
                         <li *ngFor="let alert of alerts" class="alert-{{alert['severity']}}">
-                            <span class="alerts-date">{{alert['eventDate'] | date:'M/d/yy, h:mm:ss a'}}</span>
+                          <span class="alerts-date">{{getLocalDate(alert['eventDate'])}}</span>
                             <span class="alerts-info">{{alert['message']}}</span>
                         </li>
                         <div *ngIf="!alerts.length" class="centerclass">No records found</div>
@@ -214,7 +209,7 @@
                                 <div class="user-detail-box">
                                     <!-- <h3 class="user-name"><a routerLink="/location-detail">{{generatordata.name}}</a></h3> -->
                                     <h3 class="user-name"><a
-                                            [routerLink]="['/generatordetails/'+generatordata.guid]">{{generatordata.name}}</a>
+                                            [routerLink]="['/generators/generatordetails/'+generatordata.guid]">{{generatordata.name}}</a>
                                     </h3>
                                     <p class="user-details">Name <span> {{generatordata.name}}</span></p>
                                     <p class="user-details">Type <span> {{generatordata.type}}</span></p>

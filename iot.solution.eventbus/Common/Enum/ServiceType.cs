@@ -5,6 +5,6 @@
     /// </summary>
     public enum ServiceType
     {
-        General_LoggerService = 0,
+       Greenhouse=0
     }
 }

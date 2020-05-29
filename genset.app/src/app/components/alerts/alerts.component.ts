@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NgxSpinnerService } from 'ngx-spinner'
 import { NotificationService, Notification, AlertsService } from '../../services';
 import { ActivatedRoute } from '@angular/router';
+import * as moment from 'moment-timezone'
 
 @Component({
   selector: 'app-alerts',
@@ -40,7 +41,17 @@ export class AlertsComponent implements OnInit {
         this.searchParameters.entityGuid = params['locationGuid'];
       }
     });
+    
     this.getAlertList();
+  }
+
+  getLocalDate(lDate) {
+    var utcDate = moment.utc(lDate, 'YYYY-MM-DDTHH:mm:ss.SSS');
+    // Get the local version of that date
+    var localDate = moment(utcDate).local();
+    let res = moment(localDate).format('MMM DD, YYYY hh:mm:ss A');
+    return res;
+
   }
 
   getAlertList() {

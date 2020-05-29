@@ -8,16 +8,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Entity = iot.solution.entity;
 using Model = iot.solution.model.Models;
-
+using LogHandler = component.services.loghandler;
+using System.Reflection;
 
 namespace iot.solution.service.Implementation
 {
     public class AdminUserService : IAdminUserService
     {
         private readonly IAdminUserRepository _adminUserRepository;
-        private readonly ILogger _logger;
+        private readonly LogHandler.Logger _logger;
 
-        public AdminUserService(IAdminUserRepository adminUserRepository, ILogger logManager)
+        public AdminUserService(IAdminUserRepository adminUserRepository, LogHandler.Logger logManager)
         {
             _logger = logManager;
             _adminUserRepository = adminUserRepository;
@@ -53,7 +54,7 @@ namespace iot.solution.service.Implementation
             catch (Exception ex)
             {
                 result.Success = false;
-                _logger.Error(Constants.ACTION_EXCEPTION, $"UserManager.Login {ex.Message}");
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, $"UserManager.Login {ex.Message}");
             }
             return result;
         }
@@ -67,7 +68,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, $"AdminUserService.Get, Error: { ex.Message} ");
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, $"AdminUserService.Get, Error: { ex.Message} ");
                 return null;
             }
         }
@@ -82,7 +83,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, $"UserManager.Login {ex.Message}");
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, $"UserManager.Login {ex.Message}");
                 return null;
             }
 
@@ -118,7 +119,8 @@ namespace iot.solution.service.Implementation
 
                         if (!actionStatus.Success)
                         {
-                            _logger.Error($"Admin User is not added in solution database, Error: {actionStatus.Message}");
+                            _logger.ErrorLog(new Exception($"Admin User is not added in solution database, Error: {actionStatus.Message}")
+                               , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                             actionStatus.Success = false;
                             actionStatus.Message = "Something Went Wrong!";
                         }
@@ -160,7 +162,8 @@ namespace iot.solution.service.Implementation
 
                             if (!actionStatus.Success)
                             {
-                                _logger.Error($"AdminUser is not updated in solution database, Error: {actionStatus.Message}");
+                                _logger.ErrorLog(new Exception($"AdminUser is not updated in solution database, Error: {actionStatus.Message}")
+                               , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                                 actionStatus.Success = false;
                                 actionStatus.Message = "Something Went Wrong!";
                             }
@@ -177,7 +180,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "AdminUserManager.Manage " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "AdminUserManager.Manage " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
@@ -210,14 +213,15 @@ namespace iot.solution.service.Implementation
 
                     if (!actionStatus.Success)
                     {
-                        _logger.Error($"AdminUser is not deleted in solution database, Error: {actionStatus.Message}");
+                        _logger.ErrorLog(new Exception($"AdminUser is not deleted in solution database, Error: {actionStatus.Message}")
+                               , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                     }
                 }
 
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "AdminUserManager.Delete " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "AdminUserManager.Delete " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
@@ -250,7 +254,8 @@ namespace iot.solution.service.Implementation
                     actionStatus.Data = Mapper.Configuration.Mapper.Map<Model.AdminUser, Entity.UserResponse>(actionStatus.Data);
                     if (!actionStatus.Success)
                     {
-                        _logger.Error($"AdminUser is not updated in solution database, Error: {actionStatus.Message}");
+                        _logger.ErrorLog(new Exception($"AdminUser is not updated in solution database, Error: {actionStatus.Message}")
+                               , this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                         actionStatus.Success = false;
                         actionStatus.Message = "Something Went Wrong!";
                     }
@@ -259,7 +264,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "AdminUserManager.UpdateStatus " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "AdminUserManager.UpdateStatus " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
@@ -302,7 +307,7 @@ namespace iot.solution.service.Implementation
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "AdminUserService.ChangePassword " + ex);
+                _logger.InfoLog(Constants.ACTION_EXCEPTION, "AdminUserService.ChangePassword " + ex);
             }
             return result;
         }

@@ -5,15 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Entity = iot.solution.entity;
+using LogHandler = component.services.loghandler;
 
 namespace iot.solution.service.Implementation
 {
     public class KitTypeService : IKitTypeService
     {
         private readonly IKitTypeRepository _kitTypeRepository;
-        private readonly ILogger _logger;
+        private readonly LogHandler.Logger _logger;
 
-        public KitTypeService(IKitTypeRepository kitTypeRepository, ILogger logManager)
+        public KitTypeService(IKitTypeRepository kitTypeRepository, LogHandler.Logger logManager)
         {
             _kitTypeRepository = kitTypeRepository;
             _logger = logManager;

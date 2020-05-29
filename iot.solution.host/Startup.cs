@@ -3,8 +3,10 @@ using component.eventbus.Common;
 using component.eventbus.Common.Enum;
 using component.eventbus.Model.Topic.Logger;
 using component.logger;
+using Hangfire;
 using host.iot.solution.Filter;
 using host.iot.solution.Middleware;
+using host.iot.solution.RecurringJobs;
 using iot.solution.host;
 using iot.solution.service.IocConfig;
 using Microsoft.AspNetCore.Builder;
@@ -57,7 +59,9 @@ namespace host.iot.solution
                 ConfigureServicesCollection(services);
                 ConfigureMessaging(services);
                 services.AddControllers();
+                ConfigureHangfireSettings(services);
                 component.helper.DependencyResolver.Init(services);
+               
             }
             catch (Exception ex)
             {
@@ -65,10 +69,14 @@ namespace host.iot.solution
             }
         }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             try
             {
+                GlobalConfiguration.Configuration
+               .UseActivator(new HangfireActivator(serviceProvider));
+
+                app.UseHangfireServer(new BackgroundJobServerOptions { WorkerCount = Environment.ProcessorCount });
                 if (env.IsDevelopment())
                 {
                     app.UseDeveloperExceptionPage();
@@ -84,6 +92,10 @@ namespace host.iot.solution
                 {
                     endpoints.MapControllers();
                 });
+                if (Convert.ToBoolean(component.helper.SolutionConfiguration.Configuration.HangFire.Enabled.ToString()))
+                {
+                    StartHangFireBackgroundJobs();
+                }
             }
             catch (Exception ex)
             {
@@ -93,6 +105,22 @@ namespace host.iot.solution
                     log.FatalLog(ex.ToString(), ex);
                 }
             }
+        }
+        private void ConfigureHangfireSettings(IServiceCollection services)
+        {
+            services.AddHangfire(x => x.UseSqlServerStorage(component.helper.SolutionConfiguration.Configuration.ConnectionString));
+        }
+        private static void StartHangFireBackgroundJobs()
+        {
+            // Note: if you ever remove one of these, either delete it via HangFire UI
+            // or from the database manually. Removing the code entry does NOT stop the
+            // existing job running.
+            RecurringJob.AddOrUpdate<ITelemetryDataJob>(
+                job => job.DailyProcess(),
+                Cron.Daily);
+            RecurringJob.AddOrUpdate<ITelemetryDataJob>(
+               job => job.HourlyProcess(),
+              string.Format("0 */{0} * * *", component.helper.SolutionConfiguration.Configuration.HangFire.TelemetryHours));
         }
         private void ConfigureServicesCollection(IServiceCollection services)
         {
@@ -107,8 +135,8 @@ namespace host.iot.solution
             services.Configure<DomainManager>(s =>
             {
                 //TODO: change serviceType accrodingly
-                s.ApplicationType = ApplicationType.Logger;
-                s.ServiceType = ServiceType.General_LoggerService;
+                s.ApplicationType = component.helper.SolutionConfiguration.Configuration.Logger.SolutionName;
+                s.ServiceType = component.helper.SolutionConfiguration.Configuration.Logger.SolutionName + "_LoggerService";
                 s.DomainConfiguration = new List<Type>
                     {
                         typeof(DebugLoggerModel), typeof(ErrorLoggerModel), typeof(WarningLoggerModel), typeof(InfoLoggerModel), typeof(FatalLoggerModel)
@@ -120,13 +148,18 @@ namespace host.iot.solution
             #endregion
 
             IocConfigurations.Initialize(services);
+            services.AddScoped<ITelemetryDataJob, TelemetryDataJob>();
         }
         private void ConfigureMessaging(IServiceCollection services)
         {
-            component.messaging.CustomStartup.AddIOTConnectSyncManager(services, component.helper.SolutionConfiguration.Configuration.ConnectionString,
-                component.helper.SolutionConfiguration.Configuration.Messaging.ServicebusEndPoint,
-                component.helper.SolutionConfiguration.Configuration.Messaging.TopicName,
-                component.helper.SolutionConfiguration.Configuration.Messaging.SubscriptionName);
+            if (component.helper.SolutionConfiguration.Configuration.Messaging != null
+                && !string.IsNullOrWhiteSpace(component.helper.SolutionConfiguration.Configuration.Messaging.ServicebusEndPoint))
+            {
+                component.messaging.CustomStartup.AddIOTConnectSyncManager(services, component.helper.SolutionConfiguration.Configuration.ConnectionString,
+                    component.helper.SolutionConfiguration.Configuration.Messaging.ServicebusEndPoint,
+                    component.helper.SolutionConfiguration.Configuration.Messaging.TopicName,
+                    component.helper.SolutionConfiguration.Configuration.Messaging.SubscriptionName);
+            }
         }
         public void LogStartupError(IServiceCollection services, Exception ex)
         {
@@ -138,8 +171,8 @@ namespace host.iot.solution
 
             services.Configure<DomainManager>(s =>
             {
-                s.ApplicationType = ApplicationType.Logger;
-                s.ServiceType = ServiceType.General_LoggerService;
+                s.ApplicationType = component.helper.SolutionConfiguration.Configuration.Logger.SolutionName;
+                s.ServiceType = component.helper.SolutionConfiguration.Configuration.Logger.SolutionName + "_LoggerService";
                 s.DomainConfiguration = new List<Type>
                     {
                         typeof(DebugLoggerModel), typeof(ErrorLoggerModel), typeof(WarningLoggerModel), typeof(InfoLoggerModel), typeof(FatalLoggerModel),

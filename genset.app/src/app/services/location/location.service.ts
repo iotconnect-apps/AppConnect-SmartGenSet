@@ -235,4 +235,17 @@ export class LocationService {
 		});
 	}
 
+	getlocationstatics(loactionId) {
+		var configHeader = {
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': 'Bearer ' + this.cookieService.get(this.cookieName + 'access_token')
+			}
+		};
+
+		return this.httpClient.get<any>(this.apiServer.baseUrl + 'api/location/getlocationstatics/' + loactionId, configHeader).map(response => {
+			return response;
+		});
+	}
+
 }

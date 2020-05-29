@@ -5,7 +5,7 @@ namespace iot.solution.entity.Response
 {
     public class GeneratorUsageResponse
     {
-        public string Name { get; set; }
+        public string UniqueId { get; set; }
         public string Value { get; set; }
     }
     public class EnergyUsageResponse
@@ -21,7 +21,7 @@ namespace iot.solution.entity.Response
 
     public class GeneratorBatteryStatusResponse
     {
-        public string Name { get; set; }
+        public string Month { get; set; }
         public string Value { get; set; }
    
     }

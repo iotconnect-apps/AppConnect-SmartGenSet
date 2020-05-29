@@ -9,7 +9,10 @@
     <div class="col-xl-8  m-b-30">
         <div class="drag-body dashboard-widget h-100">
             <div class="panel-heading">
-                <h5 class="panel-title"> {{this.dataobj.name}} </h5>
+                
+                <h5 class="panel-title"> 
+                        <div class="device-status mr-2" [ngClass]="(deviceIsConnected)?'on':'off'"></div>
+                        {{this.dataobj.name}} </h5>
                 <div>
                     <a data-toggle="modal" href="#myModal" class="telemetry-link">
                         <img src="../../../assets/images/telemetry-icon.svg">
@@ -22,7 +25,7 @@
                     <div class="col">
                         <div class="row">
                             <div class="col align-self-center">
-                                <div class="product-img" *ngIf="mediaUrl">
+                                <div class="product-img mb-3" *ngIf="mediaUrl">
                                     <img src={{mediaUrl}}>
                                 </div>
                             </div>
@@ -81,10 +84,10 @@
                             <img src="../../../../assets/images/engine-icon.svg" />
                         </div>
                         <div class="current-statistics-text">
-                            Engine (RPM)
+                            ENGINE (RPM)
                         </div>
                         <div class="current-statistics-data text-yellow">
-                            {{engine? engine : 'N/A'}}
+                            {{sensorData.engine_rpm? sensorData.engine_rpm : 'N/A'}}
                         </div>
                     </div>
                     <div class="current-statistics-item">
@@ -92,10 +95,10 @@
                             <img src="../../../../assets/images/current-icon.svg" />
                         </div>
                         <div class="current-statistics-text">
-                            Current (A)
+                            CURRENT (OUT)
                         </div>
                         <div class="current-statistics-data text-blue">
-                            {{current? current : 'N/A'}}
+                            {{sensorData.currentout? sensorData.currentout : 'N/A'}}
                         </div>
                     </div>
                     <div class="current-statistics-item">
@@ -103,10 +106,10 @@
                             <img src="../../../../assets/images/voltage-icon.svg" />
                         </div>
                         <div class="current-statistics-text">
-                            Voltage (V)
+                            BATTERY VOLTAGE (V)
                         </div>
                         <div class="current-statistics-data text-green">
-                            {{voltage? voltage : 'N/A'}}
+                            {{sensorData.batt_voltage? sensorData.batt_voltage : 'N/A'}}
                         </div>
                     </div>
                     <div class="current-statistics-item">
@@ -114,10 +117,10 @@
                             <img src="../../../../assets/images/fuel-sm-icon.svg" />
                         </div>
                         <div class="current-statistics-text">
-                            Fuel Level (Gal)
-                        </div>
+                            FUEL LEVEL (%)
+                        </div> 
                         <div class="current-statistics-data text-orange">
-                            {{fuelLevel? fuelLevel : 'N/A'}}
+                            {{sensorData.fuel_level? sensorData.fuel_level : 'N/A'}}
                         </div>
                     </div>
                     <div class="current-statistics-item">
@@ -125,10 +128,10 @@
                             <img src="../../../../assets/images/engine-oil-icon.svg" />
                         </div>
                         <div class="current-statistics-text">
-                            Engine Oil Pressure (psi)
+                            FUEL USED (GAL)
                         </div>
                         <div class="current-statistics-data text-skyblue">
-                            {{engineOilLevel? engineOilLevel : 'N/A'}}
+                            {{sensorData.fuel_used? sensorData.fuel_used : 'N/A'}}
                         </div>
                     </div>
                     <div class="current-statistics-item">
@@ -139,7 +142,7 @@
                             Battery Status (%)
                         </div>
                         <div class="current-statistics-data text-pink">
-                            {{batteryStatus? batteryStatus : 'N/A'}}
+                            {{sensorData.batt_level? sensorData.batt_level : 'N/A'}}
                         </div>
                     </div>
 
@@ -153,7 +156,7 @@
 <div class="row">
     <div class="col-xl-8 m-b-30">
 
-        <div class="drag-body dashboard-widget">
+        <div class="drag-body dashboard-widget m-b-30">
             <div class="panel-heading">
                 <h5 class="panel-title"> Energy Generated </h5>
             </div>
@@ -166,6 +169,7 @@
                 </div>
             </mat-card>
         </div>
+
         <div class="drag-body dashboard-widget">
             <div class="panel-heading">
                 <h5 class="panel-title">Fuel Used </h5>
@@ -185,18 +189,21 @@
             <div class="panel-heading">
                 <h5 class="panel-title"> Alerts </h5>
                 <div class="tab-link-bar">
-                    <a [routerLink]="['/alerts']" [queryParams]="{generatorGuid:generatordetailGuid}" href="javascript:;">View All</a>
-                  </div>
+                    <a [routerLink]="['/alerts']" [queryParams]="{generatorGuid:generatordetailGuid}"
+                        href="javascript:;">View All</a>
+                </div>
             </div>
             <mat-card class="dashboard-card mat-card pt-0">
-                <ul style="min-height: 659px;" class="alerts-dashboard">
+                <ul *ngIf="alerts.length" style="min-height: 689px;" class="alerts-dashboard">
                     <li *ngFor="let alert of alerts" class="alert-{{alert['severity']}}">
-                        <span class="alerts-date">{{alert['eventDate'] | date:'M/d/yy, h:mm:ss a'}}</span>
+                        <span class="alerts-date">{{getLocalDate(alert['eventDate'])}}</span>
                         <span class="alerts-info">{{alert['message']}}</span>
                     </li>
-                    <div *ngIf="!alerts.length" class="centerclass">No records found</div>
                 </ul>
-                
+                <ul *ngIf="!alerts.length" style="min-height: 689px;" class="alerts-dashboard d-flex align-items-center justify-content-center">
+                    <div class="centerclass">No records found</div>
+                </ul>
+
                 <div class="alert-indicator-wrapper">
                     <div class="alert-indicator-list">
                         <div class="alert-indicator bg-critical">
@@ -237,10 +244,10 @@
             <div class="modal-body">
                 <div class="modal-body-header">
                     <h2>{{this.dataobj.name}}</h2>
-                    <button [disableRipple]="true" mat-icon-button class="dropdown-toggle custom-dropdown-toggle"
+                    <!-- <button [disableRipple]="true" mat-icon-button class="dropdown-toggle custom-dropdown-toggle"
                         data-toggle="dropdown">
                         <mat-icon>more_horiz</mat-icon>
-                    </button>
+                    </button> -->
                     <div class="dropdown-menu dropdown-menu-right custom-dropdown-menu">
                         <mat-card class="filter-card mb-0">
                             <mat-card-content class="status-ticket-dropdown">
@@ -281,14 +288,13 @@
 
 <section class="create-drawer transform" *ngIf="respondShow">
     <div class="head">
-        <a href="javascript:void()" class="closedrawer" (click)="refresh()"><i
-                class="material-icons">close</i></a>
+        <a href="javascript:void()" class="closedrawer" (click)="refresh()"><i class="material-icons">close</i></a>
         <h2>Media Files</h2>
     </div>
     <div class="form-container">
         <div class="view-form">
             <form [formGroup]="imageForm" (ngSubmit)="uploadMedia();" autocomplete="off"
-                class="form-horizontal common-form" >
+                class="form-horizontal common-form">
                 <div class="row">
                     <div class="col-12">
                         <input formControlName="files" (change)="handleImageInput($event)" class="upload-image"
@@ -307,8 +313,8 @@
                                     type="submit">
                                     Upload
                                 </button>
-                                <button mat-flat-button color="primary" class="text-white m-l-10"
-                                    (click)="refresh()" title="Cancel">
+                                <button mat-flat-button color="primary" class="text-white m-l-10" (click)="refresh()"
+                                    title="Cancel">
                                     Cancel
                                 </button>
                             </div>

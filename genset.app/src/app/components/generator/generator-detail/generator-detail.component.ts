@@ -17,6 +17,7 @@ import { Location } from '@angular/common';
 import * as moment from 'moment-timezone'
 import * as _ from 'lodash'
 import { MessageDialogComponent } from '../..';
+import { arrayToHash } from '@fullcalendar/core/util/object';
 
 @Component({
   selector: 'app-generator-detail',
@@ -103,7 +104,7 @@ export class GeneratorDetailComponent implements OnInit {
     }
 
   };
-  isConnected = false;
+  deviceIsConnected = false;
   checkSubmitStatus = false;
   selectedFiles: any = [];
   imageForm: FormGroup;
@@ -149,14 +150,17 @@ export class GeneratorDetailComponent implements OnInit {
         backgroundColor: this.bgColor,
         hAxis: {
           title: 'Date/Time',
-          gridlines: {
-            count: 5
+          titleTextStyle: {
+            bold: true
           },
         },
         vAxis: {
           title: 'Values',
-          gridlines: {
-            count: 1
+          titleTextStyle: {
+            bold: true
+          },
+          viewWindow: {
+            min: 0
           },
         }
       },
@@ -172,14 +176,17 @@ export class GeneratorDetailComponent implements OnInit {
         backgroundColor: this.bgColor,
         hAxis: {
           title: 'Date/Time',
-          gridlines: {
-            count: 5
+          titleTextStyle: {
+            bold: true
           },
         },
         vAxis: {
           title: 'Values',
-          gridlines: {
-            count: 1
+          titleTextStyle: {
+            bold: true
+          },
+          viewWindow: {
+            min: 0
           },
         }
       },
@@ -189,6 +196,15 @@ export class GeneratorDetailComponent implements OnInit {
   };
   currentUser = JSON.parse(localStorage.getItem('currentUser'));
   alerts = [];
+  sensorData = {
+    engine_rpm: 0,
+    currentout: 0,
+    batt_voltage: 0,
+    fuel_level: 0,
+    fuel_used: 0,
+    batt_level: 0,
+  }
+  isConnected = false;
   constructor(
     private activatedRoute: ActivatedRoute,
     private deviceService: DeviceService,
@@ -205,7 +221,8 @@ export class GeneratorDetailComponent implements OnInit {
       // set data for parent device
       if (params.generatordetailGuid != null) {
         this.generatordetailGuid = params.generatordetailGuid;
-        this.getgenraterDetail(params.generatordetailGuid);
+        //this.getgenraterDetail(params.generatordetailGuid);
+        this.getgenraterTelemetry(params.generatordetailGuid);
         this.getgenraterMedia(params.generatordetailGuid);
       }
     });
@@ -218,6 +235,93 @@ export class GeneratorDetailComponent implements OnInit {
     //this.getSoilnutritionChartData();
     this.getFuelUsageChartData();
     this.getAlertList();
+  }
+
+  getDeviceStatus(uniqueId) {
+		this.spinner.show();
+		this.deviceService.getDeviceStatus(uniqueId).subscribe(response => {
+			if (response.isSuccess === true) {
+				this.isConnected = response.data.isConnected;
+				this.spinner.hide();
+			} else {
+				this._notificationService.add(new Notification('error', response.message));
+			}
+		}, error => {
+			this.spinner.hide();
+			this._notificationService.add(new Notification('error', error));
+		});
+	}
+
+
+  getgenraterDetail(genraterGuid) {
+
+    this.spinner.show();
+    this.deviceService.getgenraterStatistics(genraterGuid).subscribe(response => {
+      if (response.isSuccess === true) {
+
+        this.spinner.hide();
+        this.getDeviceStatus(response.data.uniqueId)
+        this.batteryStatus = response.data.batteryStatus
+        this.current = response.data.current
+        this.engine = response.data.engine
+        this.engineOilLevel = response.data.engineOilLevel
+        this.fuelLevel = response.data.fuelLevel
+        this.voltage = response.data.voltage
+      } else {
+        this._notificationService.add(new Notification('error', response.message));
+      }
+    }, error => {
+      this.spinner.hide();
+      this._notificationService.add(new Notification('error', error));
+    });
+  }
+
+  getgenraterTelemetry(genraterGuid) {
+
+    this.spinner.show();
+    this.deviceService.getgenraterTelemetry(genraterGuid).subscribe(response => {
+      if (response.isSuccess === true) {
+        response.data.forEach(element => {
+          if (element.attributeName === "engine_rpm") {
+            this.sensorData.engine_rpm = element.attributeValue;
+          } else if (element.attributeName === "currentout") {
+            this.sensorData.currentout = element.attributeValue;
+          } else if (element.attributeName === "batt_voltage") {
+            this.sensorData.batt_voltage = element.attributeValue;
+          } else if (element.attributeName === "fuel_level") {
+            this.sensorData.fuel_level = element.attributeValue;
+          } else if (element.attributeName === "fuel_used") {
+            this.sensorData.fuel_used = element.attributeValue;
+          } else if (element.attributeName === "batt_level") {
+            this.sensorData.batt_level = element.attributeValue;
+          }
+
+        });
+        this.spinner.hide();
+
+        // this.batteryStatus = response.data.batteryStatus
+        // this.current = response.data.current
+        // this.engine = response.data.engine
+        // this.engineOilLevel = response.data.engineOilLevel
+        // this.fuelLevel = response.data.fuelLevel
+        //this.voltage = response.data.voltage
+      } else {
+        this._notificationService.add(new Notification('error', response.message));
+      }
+    }, error => {
+      this.spinner.hide();
+      this._notificationService.add(new Notification('error', error));
+    });
+  }
+
+
+  getLocalDate(lDate) {
+    var utcDate = moment.utc(lDate, 'YYYY-MM-DDTHH:mm:ss.SSS');
+    // Get the local version of that date
+    var localDate = moment(utcDate).local();
+    let res = moment(localDate).format('MMM DD, YYYY hh:mm:ss A');
+    return res;
+
   }
   getAlertList() {
     this.spinner.show();
@@ -245,7 +349,7 @@ export class GeneratorDetailComponent implements OnInit {
 
 
   getFuelUsageChartData() {
-    let obj = { companyGuid: this.currentUser.userDetail.companyId, hardwareKitGuid: this.generatordetailGuid };
+    let obj = { companyGuid: this.currentUser.userDetail.companyId, deviceGuid: this.generatordetailGuid };
     let data = []
     this.deviceService.getFuelUsageChartData(obj).subscribe(response => {
       this.spinner.hide();
@@ -254,9 +358,9 @@ export class GeneratorDetailComponent implements OnInit {
           data.push(['Months', 'Fuel']);
 
           response.data.forEach(element => {
-            data.push([element.month, parseInt(element.value)]);
+            data.push([element.month, parseFloat(element.value)]);
           });
-          this.createHistoryChart('fuelUsage', data, 'Months', 'gal');
+          this.createHistoryChart('fuelUsage', data, 'Months', 'gal', '#ed734c');
         } else {
           this.chart.fuelUsage.dataTable = [];
         }
@@ -274,19 +378,19 @@ export class GeneratorDetailComponent implements OnInit {
 
   }
   getEnergyUsageChartData() {
-    let obj = { companyGuid: this.currentUser.userDetail.companyId, hardwareKitGuid: this.generatordetailGuid };
+    let obj = { companyGuid: this.currentUser.userDetail.companyId, deviceGuid: this.generatordetailGuid };
     let data = [];
     this.spinner.show();
     this.deviceService.getEnergyUsageChartData(obj).subscribe(response => {
-      
+
       if (response.isSuccess === true) {
         if (response.data.length) {
           data.push(['Months', 'Energy']);
 
           response.data.forEach(element => {
-            data.push([element.month, parseInt(element.value)]);
+            data.push([element.month, parseFloat(element.value)]);
           });
-          this.createHistoryChart('energyConsumption', data, 'Months', 'KWH');
+          this.createHistoryChart('energyConsumption', data, 'Months', 'KWH','#5496d0');
           this.spinner.hide();
         } else {
           this.spinner.hide();
@@ -307,7 +411,7 @@ export class GeneratorDetailComponent implements OnInit {
 
   }
 
-  createHistoryChart(key, data, hAxisTitle, vAxisTitle) {
+  createHistoryChart(key, data, hAxisTitle, vAxisTitle,color) {
     let height = this.chartHeight;
     if (key === 'soilNutritions') {
       height = 450
@@ -316,21 +420,27 @@ export class GeneratorDetailComponent implements OnInit {
       chartType: 'ColumnChart',
       dataTable: data,
       options: {
+        bar: { groupWidth: "25%" },
+        colors: [color],
         height: height,
         width: this.chartWidth,
+        legend: {position: 'none'},
         interpolateNulls: true,
         backgroundColor: this.bgColor,
         hAxis: {
           title: hAxisTitle,
-          gridlines: {
-            count: 5
+          titleTextStyle: {
+            bold: true
           },
         },
         vAxis: {
           title: vAxisTitle,
-          gridlines: {
-            count: 1
+          titleTextStyle: {
+            bold: true
           },
+          viewWindow: {
+            min: 0
+          }
         }
       },
       formatters: this.headFormate
@@ -367,68 +477,80 @@ export class GeneratorDetailComponent implements OnInit {
   }
   public on_next = (message: Message) => {
     let obj: any = JSON.parse(message.body);
-    let reporting_data = obj.data.data.reporting
-    this.isConnected = true;
-    let dates = obj.data.data.time;
-    let now = moment();
-    if (obj.data.data.status != 'off') {
-      this.options = {
-        type: 'line',
-        scales: {
+    if (obj.data.msgType === 'telemetry') {
+      let reporting_data = obj.data.data.reporting
+      this.isConnected = true;
+      //--updating live data into statisatics--//
+      this.deviceIsConnected = true;
+      this.sensorData = reporting_data;
+      //--updating live data into statisatics--//
 
-          xAxes: [{
-            type: 'realtime',
-            time: {
-              stepSize: 10
-            },
-            realtime: {
-              duration: 90000,
-              refresh: 7000,
-              delay: 2000,
-              onRefresh: function (chart: any) {
-                if (obj.data.data.status != 'on') {
-                  chart.data.datasets.forEach(function (dataset: any) {
+      let dates = obj.data.data.time;
+      let now = moment();
+      if (obj.data.data.status != 'off') {
+        this.options = {
+          type: 'line',
+          scales: {
 
-                    dataset.data.push({
+            xAxes: [{
+              type: 'realtime',
+              time: {
+                stepSize: 10
+              },
+              realtime: {
+                duration: 90000,
+                refresh: 7000,
+                delay: 2000,
+                onRefresh: function (chart: any) {
+                  if (obj.data.data.status != 'on') {
+                    chart.data.datasets.forEach(function (dataset: any) {
 
-                      x: now,
+                      dataset.data.push({
 
-                      y: reporting_data[dataset.label]
+                        x: now,
+
+                        y: reporting_data[dataset.label]
+
+                      });
 
                     });
-
-                  });
-                }
+                  }
 
 
-              },
+                },
 
-              // delay: 2000
+                // delay: 2000
 
-            }
+              }
 
-          }],
-          yAxes: [{
-            scaleLabel: {
-              display: true,
-              labelString: 'value'
-            }
-          }]
+            }],
+            yAxes: [{
+              scaleLabel: {
+                display: true,
+                labelString: 'value'
+              }
+            }]
 
-        },
-        tooltips: {
-          mode: 'nearest',
-          intersect: false
-        },
-        hover: {
-          mode: 'nearest',
-          intersect: false
+          },
+          tooltips: {
+            mode: 'nearest',
+            intersect: false
+          },
+          hover: {
+            mode: 'nearest',
+            intersect: false
+          }
+
         }
-
+      }
+      obj.data.data.time = now;
+    } else if (obj.data.msgType === 'simulator') {
+      if (obj.data.data.status === 'off') {
+        this.deviceIsConnected = false;
+      } else {
+        this.deviceIsConnected = true;
       }
     }
-    obj.data.data.time = now;
-
   }
   createFormGroup() {
     this.imageForm = new FormGroup({
@@ -436,28 +558,7 @@ export class GeneratorDetailComponent implements OnInit {
     });
   }
 
-  getgenraterDetail(genraterGuid) {
 
-    this.spinner.show();
-    this.deviceService.getgenraterStatistics(genraterGuid).subscribe(response => {
-      if (response.isSuccess === true) {
-
-        this.spinner.hide();
-
-        this.batteryStatus = response.data.batteryStatus
-        this.current = response.data.current
-        this.engine = response.data.engine
-        this.engineOilLevel = response.data.engineOilLevel
-        this.fuelLevel = response.data.fuelLevel
-        this.voltage = response.data.voltage
-      } else {
-        this._notificationService.add(new Notification('error', response.message));
-      }
-    }, error => {
-      this.spinner.hide();
-      this._notificationService.add(new Notification('error', error));
-    });
-  }
 
 
   // For get TelemetryData
@@ -500,6 +601,7 @@ export class GeneratorDetailComponent implements OnInit {
     this.deviceService.getgenraterMedia(genraterGuid).subscribe(response => {
       if (response.isSuccess === true) {
         this.spinner.hide();
+        this.getDeviceStatus(response.data.uniqueId)
         this.getgenraterTelemetryData(response.data.templateGuid);
         this.mediaFiles = response.data.mediaFiles
         this.dataobj = response.data

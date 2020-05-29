@@ -21,11 +21,6 @@
 						<div class="connected-disconnected-data-wrapper">
 							<div class="connected-disconnected-data-item">
 								<div class="connected-disconnected-data text-green">{{totalOnGenerators}}</div>
-								<div class="connected-disconnected-desc">On</div>
-							</div>
-							<div class="connected-disconnected-data-item">
-								<div class="connected-disconnected-data text-red">{{totalOffGenerators}}</div>
-								<div class="connected-disconnected-desc">off</div>
 							</div>
 						</div>
 					</div>
@@ -68,7 +63,7 @@
 			<div class="drag-body dashboard-widget h-100">
 				<div class="panel-heading">
 					<h5 class="panel-title"> Locations </h5>
-					<div class="mr-3">
+					<div class="mr-3 d-flex">
 						<button mat-flat-button type="button" color="primary" title="Map"
 							[ngClass]=" mapview ? 'active' : ''" (click)="mapview = !mapview">
 							<img src="../../../assets/images/map-icon.svg" />
@@ -95,7 +90,7 @@
 					<div *ngIf="!mapview" id="map-list">
 
 						<div class="map-list-wrapper">
-							<div class="user-grid-wrapper p-3 pb-0">
+							<div class="user-grid-wrapper px-3 pt-3 pb-0">
 								<section class="content-header p-t-10">
 									<div class="ml-auto content-header-action">
 										<form (onsubmit)="search(locationobj.searchText)">
@@ -115,46 +110,52 @@
 										</form>
 									</div>
 								</section>
-								<div class="row">
-									<div class="col-ld-6 col-lg-6 col-xl-6 m-b-30" *ngFor="let loc of locationlist">
-										<div class="user-grid-box">
-											<div class="user-status-indicator status-green"></div>
-											<div class="grid-inner-flex d-flex align-items-center">
-												<div class="user-image-box">
-													<img src="../../../assets/images/location-circle-icon.png"
-														class="img-fluid" alt="">
-												</div>
-												<div class="user-detail-box">
-													<h3 class="user-name"><a (click)="clickDetail(loc.guid)"
-															style="cursor:pointer">{{loc.name}}</a></h3>
-													<p class="user-details">Generators
-														<span>{{loc.totalGenerators}}</span></p>
-												</div>
-											</div>
-											<div class="user-actions d-flex flex-wrap">
-												<div class="user-actions-cta text-center">
-													<a class="green" [routerLink]="['/location',loc.guid]" title="Edit">
-														<img alt="Edit" src="./assets/images/icon-edit.svg">
-													</a>
-												</div>
-												<!-- <div class="user-actions-cta text-center">
-										  <a href="javascript:void(0);"
-											 title="View">
-											<img src="../../../assets/images/view-user.svg" alt="Delete">
-										  </a>
-										</div> -->
-												<div class="user-actions-cta text-center">
-													<a class="red" href="javascript:void(0)" data-toggle="modal"
-														data-target="#deviceDeleteModal" (click)="deleteModel(loc.guid)"
-														title="Delete">
-														<!-- <i class="far fa-trash-alt"></i> -->
-														<img src="./assets/images/icon-delete.svg">
-													</a>
+								
+									
+									<ng-scrollbar>
+										<div class="row locations-list-wrapper">
+											<div class="col-ld-6 col-lg-6 col-xl-6 m-b-30" *ngFor="let loc of locationlist">
+												<div class="user-grid-box">
+													<div class="user-status-indicator status-green"></div>
+													<div class="grid-inner-flex d-flex align-items-center">
+														<div class="user-image-box">
+															<img src="../../../assets/images/location-circle-icon.png"
+																class="img-fluid" alt="">
+														</div>
+														<div class="user-detail-box">
+															<h3 class="user-name"><a (click)="clickDetail(loc.guid)"
+																	style="cursor:pointer">{{loc.name}}</a></h3>
+															<p class="user-details">Generators
+																<span>{{loc.totalGenerators}}</span></p>
+														</div>
+													</div>
+													<div class="user-actions d-flex flex-wrap">
+														<div class="user-actions-cta text-center">
+															<a class="green" [routerLink]="['/locations',loc.guid]" title="Edit">
+																<img alt="Edit" src="./assets/images/icon-edit.svg">
+															</a>
+														</div>
+														<!-- <div class="user-actions-cta text-center">
+												<a href="javascript:void(0);"
+													title="View">
+													<img src="../../../assets/images/view-user.svg" alt="Delete">
+												</a>
+												</div> -->
+														<div class="user-actions-cta text-center">
+															<a class="red" href="javascript:void(0)" data-toggle="modal"
+																data-target="#deviceDeleteModal" (click)="deleteModel(loc.guid)"
+																title="Delete">
+																<!-- <i class="far fa-trash-alt"></i> -->
+																<img src="./assets/images/icon-delete.svg">
+															</a>
+														</div>
+													</div>
 												</div>
 											</div>
 										</div>
-									</div>
-								</div>
+									</ng-scrollbar>
+									
+								
 
 							</div>
 						</div>
@@ -190,12 +191,16 @@
 					  </div>
 				</div>
 				<mat-card class="dashboard-card mat-card pt-0">
-					<ul style="min-height: 372px;" class="alerts-dashboard">
+					<ul *ngIf="alerts.length" style="min-height: 372px;" class="alerts-dashboard">
 						<li *ngFor="let alert of alerts" class="alert-{{alert['severity']}}">
-							<span class="alerts-date">{{alert['eventDate'] | date:'M/d/yy, h:mm:ss a'}}</span>
+							<span class="alerts-date">{{getLocalDate(alert['eventDate'])}}</span>
 							<span class="alerts-info">{{alert['message']}}</span>
 						</li>
-						<div *ngIf="!alerts.length" class="centerclass">No records found</div>
+						
+					
+					</ul>
+					<ul *ngIf="!alerts.length" style="min-height: 372px;" class="alerts-dashboard d-flex align-items-center justify-content-center">
+						<div class="centerclass">No records found</div>
 					</ul>
 					<div class="alert-indicator-wrapper">
 						<div class="alert-indicator-list">

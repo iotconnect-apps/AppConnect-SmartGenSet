@@ -98,6 +98,33 @@ namespace iot.solution.model.Repository.Implementation
             }
             return result;
         }
-       
+
+        public Entity.BaseResponse<List<Entity.LocationStaticsResponse>> GetLocationStatics(Guid locationId)
+        {
+            Entity.BaseResponse<List<Entity.LocationStaticsResponse>> result = new Entity.BaseResponse<List<Entity.LocationStaticsResponse>>();
+            try
+            {
+                logger.Information(Constants.ACTION_ENTRY, "LocationRepository.GetLocationStatics");
+                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                {
+                    List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
+                    parameters.Add(sqlDataAccess.CreateParameter("guid", locationId, DbType.Guid, ParameterDirection.Input));
+                    parameters.Add(sqlDataAccess.CreateParameter("syncDate", DateTime.UtcNow, DbType.DateTime, ParameterDirection.Output));
+                    DbDataReader dbDataReader = sqlDataAccess.ExecuteReader(sqlDataAccess.CreateCommand("[LocationStatistics_Get]", CommandType.StoredProcedure, null), parameters.ToArray());
+                    result.Data = DataUtils.DataReaderToList<Entity.LocationStaticsResponse>(dbDataReader, null);
+                    if (parameters.Where(p => p.ParameterName.Equals("syncDate")).FirstOrDefault() != null)
+                    {
+                        result.LastSyncDate = Convert.ToString(parameters.Where(p => p.ParameterName.Equals("syncDate")).FirstOrDefault().Value);
+                    }
+                }
+                logger.Information(Constants.ACTION_EXIT, "LocationRepository.GetLocationStatics");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(Constants.ACTION_EXCEPTION, ex);
+            }
+            return result;
+        }
+
     }
 }

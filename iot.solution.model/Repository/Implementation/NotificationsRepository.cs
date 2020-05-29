@@ -30,8 +30,8 @@ namespace iot.solution.model.Repository.Implementation
                     parameters.Add(sqlDataAccess.CreateParameter("companyGuid", component.helper.SolutionConfiguration.CompanyId, DbType.Guid, ParameterDirection.Input));
                     if (!string.IsNullOrEmpty(request.EntityGuid))
                         parameters.Add(sqlDataAccess.CreateParameter("entityGuid", Guid.Parse(request.EntityGuid), DbType.Guid, ParameterDirection.Input));
-                    if(!string.IsNullOrEmpty(request.DeviceGuid))
-                        parameters.Add(sqlDataAccess.CreateParameter("deviceGuid",  Guid.Parse(request.DeviceGuid) , DbType.Guid, ParameterDirection.Input));
+                    if (!string.IsNullOrEmpty(request.DeviceGuid))
+                        parameters.Add(sqlDataAccess.CreateParameter("deviceGuid", Guid.Parse(request.DeviceGuid), DbType.Guid, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("pagesize", request.PageSize, DbType.Int32, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("pagenumber", request.PageNumber, DbType.Int32, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("orderby", request.OrderBy, DbType.String, ParameterDirection.Input));

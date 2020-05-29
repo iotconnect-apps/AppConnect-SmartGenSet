@@ -11,6 +11,6 @@ namespace iot.solution.model.Repository.Interface
         Entity.SearchResult<List<Model.LocationWithCounts>> List(Entity.SearchRequest request);
         List<Entity.LookupItem> GetLookup(Guid companyId);
         ActionStatus Manage(Model.Location request);
-        
+        Entity.BaseResponse<List<Entity.LocationStaticsResponse>> GetLocationStatics(Guid locationId);
     }
 }

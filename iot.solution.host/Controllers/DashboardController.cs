@@ -1,4 +1,5 @@
 ﻿using iot.solution.entity.Structs.Routes;
+using iot.solution.host.Filter;
 using iot.solution.service.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,15 +28,17 @@ namespace host.iot.solution.Controllers
 
         [HttpGet]
         [Route(DashboardRoute.Route.GetLocations, Name = DashboardRoute.Name.GetLocations)]
-        public Entity.BaseResponse<List<Entity.LookupItem>> GetLocations(Guid companyId)
+        [EnsureGuidParameterAttribute("companyId", "Dashboard")]
+        public Entity.BaseResponse<List<Entity.LookupItem>> GetLocations(string companyId)
         {
             Entity.BaseResponse<List<Entity.LookupItem>> response = new Entity.BaseResponse<List<Entity.LookupItem>>(true);
             try
             {
-                response.Data = _service.GetLocationLookup(companyId);
+                response.Data = _service.GetLocationLookup(Guid.Parse(companyId));
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.LookupItem>>(false, ex.Message);
             }
             return response;
@@ -48,10 +51,11 @@ namespace host.iot.solution.Controllers
             Entity.BaseResponse<Entity.DashboardOverviewResponse> response = new Entity.BaseResponse<Entity.DashboardOverviewResponse>(true);
             try
             {
-                response.Data = _service.GetOverview();
+                response = _service.GetOverview();
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.DashboardOverviewResponse>(false, ex.Message);
             }
             return response;
@@ -59,9 +63,10 @@ namespace host.iot.solution.Controllers
 
         [HttpGet]
         [Route(DashboardRoute.Route.GetLocationDetail, Name = DashboardRoute.Name.GetLocationDetail)]
-        public Entity.BaseResponse<Response.LocationDetailResponse> GetLocationDetail(Guid locationId)
+        [EnsureGuidParameterAttribute("locationId", "Dashboard")]
+        public Entity.BaseResponse<Response.LocationDetailResponse> GetLocationDetail(string locationId)
         {
-            if (locationId == null || locationId == Guid.Empty)
+            if (locationId == null || Guid.Parse(locationId) == Guid.Empty)
             {
                 return new Entity.BaseResponse<Response.LocationDetailResponse>(false, "Invalid Request");
             }
@@ -69,10 +74,11 @@ namespace host.iot.solution.Controllers
             Entity.BaseResponse<Response.LocationDetailResponse> response = new Entity.BaseResponse<Response.LocationDetailResponse>(true);
             try
             {
-                response.Data = _locationService.GetLocationDetail(locationId);
+                response.Data = _locationService.GetLocationDetail(Guid.Parse(locationId));
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Response.LocationDetailResponse>(false, ex.Message);
             }
             return response;
@@ -80,9 +86,10 @@ namespace host.iot.solution.Controllers
 
         [HttpGet]
         [Route(DashboardRoute.Route.GetLocationDevices, Name = DashboardRoute.Name.GetLocationDevices)]
-        public Entity.BaseResponse<List<Response.LocationWiseGeneratorResponse>> GetLocationDevices(Guid locationId)
+        [EnsureGuidParameterAttribute("locationId", "Dashboard")]
+        public Entity.BaseResponse<List<Response.LocationWiseGeneratorResponse>> GetLocationDevices(string locationId)
         {
-            if (locationId == null || locationId == Guid.Empty)
+            if (locationId == null || Guid.Parse(locationId) == Guid.Empty)
             {
                 return new Entity.BaseResponse<List<Response.LocationWiseGeneratorResponse>>(false, "Invalid Request");
             }
@@ -90,10 +97,11 @@ namespace host.iot.solution.Controllers
             Entity.BaseResponse<List<Response.LocationWiseGeneratorResponse>> response = new Entity.BaseResponse<List<Response.LocationWiseGeneratorResponse>>(true);
             try
             {
-                response.Data = _generatorService.GetLocationWiseGenerators(locationId);
+                response.Data = _generatorService.GetLocationWiseGenerators(Guid.Parse(locationId));
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Response.LocationWiseGeneratorResponse>>(false, ex.Message);
             }
             return response;
@@ -101,9 +109,10 @@ namespace host.iot.solution.Controllers
 
         [HttpGet]
         [Route(DashboardRoute.Route.GetLocationChildDevices, Name = DashboardRoute.Name.GetLocationChildDevices)]
-        public Entity.BaseResponse<List<Response.LocationWiseGeneratorResponse>> GetLocationChildDevices(Guid deviceId)
+        [EnsureGuidParameterAttribute("deviceId", "Dashboard")]
+        public Entity.BaseResponse<List<Response.LocationWiseGeneratorResponse>> GetLocationChildDevices(string deviceId)
         {
-            if (deviceId == null || deviceId == Guid.Empty)
+            if (deviceId == null || Guid.Parse(deviceId) == Guid.Empty)
             {
                 return new Entity.BaseResponse<List<Response.LocationWiseGeneratorResponse>>(false, "Invalid Request");
             }
@@ -111,10 +120,11 @@ namespace host.iot.solution.Controllers
             Entity.BaseResponse<List<Response.LocationWiseGeneratorResponse>> response = new Entity.BaseResponse<List<Response.LocationWiseGeneratorResponse>>(true);
             try
             {
-                response.Data = _generatorService.GetLocationChildDevices(deviceId);
+                response.Data = _generatorService.GetLocationChildDevices(Guid.Parse(deviceId));
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Response.LocationWiseGeneratorResponse>>(false, ex.Message);
             }
             return response;
@@ -122,9 +132,10 @@ namespace host.iot.solution.Controllers
 
         [HttpGet]
         [Route(DashboardRoute.Route.GetGeneratorDetail, Name = DashboardRoute.Name.GetGeneratorDetail)]
-        public Entity.BaseResponse<Response.GeneratorDetailResponse> GetGeneratorDetail(Guid generatorId)
+        [EnsureGuidParameterAttribute("generatorId", "Dashboard")]
+        public Entity.BaseResponse<Response.GeneratorDetailResponse> GetGeneratorDetail(string generatorId)
         {
-            if (generatorId == null || generatorId == Guid.Empty)
+            if (generatorId == null || Guid.Parse(generatorId) == Guid.Empty)
             {
                 return new Entity.BaseResponse<Response.GeneratorDetailResponse>(false, "Invalid Request");
             }
@@ -132,10 +143,11 @@ namespace host.iot.solution.Controllers
             Entity.BaseResponse<Response.GeneratorDetailResponse> response = new Entity.BaseResponse<Response.GeneratorDetailResponse>(true);
             try
             {
-                response.Data = _generatorService.GetGeneratorDetail(generatorId);
+                response = _generatorService.GetGeneratorDetail(Guid.Parse(generatorId));
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Response.GeneratorDetailResponse>(false, ex.Message);
             }
             return response;

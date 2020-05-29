@@ -236,6 +236,13 @@ export class DeviceService {
 		});
 	}
 
+	getDeviceStatus(uniqueId) {
+
+		return this.httpClient.get<any>(this.apiServer.baseUrl + '/api/generator/connectionstatus/' + uniqueId).map(response => {
+			return response;
+		});
+	}
+
 	uploadData(data) {
 
 		return this.httpClient.post<any>(this.apiServer.baseUrl + 'api/hardwarekit/uploadkit', data).map(response => {
@@ -337,6 +344,14 @@ export class DeviceService {
 		});
 	}
 
+	getgenraterTelemetry(genraterGuid) {
+
+
+		return this.httpClient.get<any>(this.apiServer.baseUrl + 'api/generator/telemetry/' + genraterGuid).map(response => {
+			return response;
+		});
+	}
+
 	getgenraterTelemetryData(templateGuid) {
 		return this.httpClient.get<any>(this.apiServer.baseUrl + 'api/lookup/attributes/' + templateGuid).map(response => {
 			return response;
@@ -383,16 +398,17 @@ export class DeviceService {
 			return response;
 		});
 	}
+
 	// Get getWaterUsageChartData
 	getFuelUsageChartData(data) {
-		return this.httpClient.post<any>(this.apiServer.baseUrl + 'api/chart/getfuelusage', data).map(response => {
+		return this.httpClient.post<any>(this.apiServer.baseUrl + 'api/chart/getfuelused', data).map(response => {
 			return response;
 		});
 	}
 
 	// Get Gateway Count
 	getEnergyUsageChartData(data) {
-		return this.httpClient.post<any>(this.apiServer.baseUrl + 'api/chart/getenergyusage', data).map(response => {
+		return this.httpClient.post<any>(this.apiServer.baseUrl + 'api/chart/getenergygenerated', data).map(response => {
 			return response;
 		});
 	}

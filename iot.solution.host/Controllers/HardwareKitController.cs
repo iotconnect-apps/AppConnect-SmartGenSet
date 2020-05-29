@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using host.iot.solution.Controllers;
+using host.iot.solution.Filter;
 using iot.solution.entity.Structs.Routes;
+using iot.solution.host.Filter;
 using iot.solution.service.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +20,8 @@ namespace iot.solution.host.Controllers
     public class HardwareKitController : BaseController
     {
         private readonly IHardwareKitService _service;
-
+        private readonly string SpecialCharRegex = @"^[A-Za-z0-9 ]+$";
+        private readonly string UniqueIDSpecialCharRegex = @"^[A-Za-z0-9]+$";
         public HardwareKitController(IHardwareKitService hardwareKitService)
         {
             _service = hardwareKitService;
@@ -50,6 +54,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.SearchResult<List<Entity.HardwareKitResponse>>>(false, ex.Message);
             }
             return response;
@@ -62,15 +67,17 @@ namespace iot.solution.host.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route(HardwareKitRoute.Route.GetById, Name = HardwareKitRoute.Name.GetById)]
-        public Entity.BaseResponse<Entity.HardwareKitDTO> Get(Guid id)
+        [EnsureGuidParameterAttribute("id", "Hardware Kit")]
+        public Entity.BaseResponse<Entity.HardwareKitDTO> Get(string id)
         {
             Entity.BaseResponse<Entity.HardwareKitDTO> response = new Entity.BaseResponse<Entity.HardwareKitDTO>(true);
             try
             {
-                response.Data = _service.Get(id);
+                response.Data = _service.Get(Guid.Parse(id));
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<Entity.HardwareKitDTO>(false, ex.Message);
             }
             return response;
@@ -88,14 +95,17 @@ namespace iot.solution.host.Controllers
         {
             Entity.BaseResponse<List<Entity.BulkUploadResponse>> response = new Entity.BaseResponse<List<Entity.BulkUploadResponse>>(true);
             try
-            {    
+            {
+
                 var status = _service.Manage(request, isEdit);
                 response.IsSuccess = status.Success;
                 response.Message = status.Message;
                 response.Data = status.Data;
+
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.BulkUploadResponse>>(false, ex.Message);
             }
             return response;
@@ -108,18 +118,20 @@ namespace iot.solution.host.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route(HardwareKitRoute.Route.Delete, Name = HardwareKitRoute.Name.Delete)]
-        public Entity.BaseResponse<bool> Delete(Guid id)
+        [EnsureGuidParameterAttribute("id", "Hardware Kit")]
+        public Entity.BaseResponse<bool> Delete(string id)
         {
             Entity.BaseResponse<bool> response = new Entity.BaseResponse<bool>(true);
             try
             {
-                var status = _service.Delete(id);
+                var status = _service.Delete(Guid.Parse(id));
                 response.IsSuccess = status.Success;
                 response.Message = status.Message;
                 response.Data = status.Success;
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<bool>(false, ex.Message);
             }
             return response;
@@ -144,12 +156,13 @@ namespace iot.solution.host.Controllers
                 kitObj.Note = "KIT NOTE";
                 //kitObj.Tag = "KIT TAG";
                 //kitObj.AttributeName = "DEVICE ATTRIBUTE NAME";
-                kitObj.UniqueId = "KIT UNIQUEID";
+                kitObj.UniqueId = "KITUNIQUEID";
                 list.Add(kitObj);
                 result = JsonConvert.SerializeObject(list);
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 throw ex;
             }
 
@@ -171,21 +184,49 @@ namespace iot.solution.host.Controllers
                 List<Entity.KitVerifyResponse> lstTestData = new List<Entity.KitVerifyResponse>();
                 //TODO
 
+                response.IsSuccess = false;
                 var result = _service.VerifyKit(request);
-
                 if (result.Success)
-                    response.IsSuccess = true;
+                {
+                    if (request.HardwareKits.Where(t => string.IsNullOrEmpty(t.KitCode.Trim()) || string.IsNullOrEmpty(t.UniqueId.Trim()) || string.IsNullOrEmpty(t.Name.Trim())).FirstOrDefault() == null)
+                    {
+                        if (request.HardwareKits.Where(t => Regex.IsMatch(t.KitCode.Trim(), SpecialCharRegex) && Regex.IsMatch(t.UniqueId.Trim(), UniqueIDSpecialCharRegex)).FirstOrDefault() != null)
+                        {
+                            response.IsSuccess = true;
+                        }
+                        else
+                        {
+                            response.IsSuccess = false;
+                        }
+                    }
+                    else
+                    {
+                        response.IsSuccess = false;
+                    }
+                }
                 else
                 {
                     response.IsSuccess = false;
                     response.Message = result.Message;
                 }
+                if (!response.IsSuccess)
+                {
+                    response.IsSuccess = false;
+                    response.Message = "KitCode or UniqueID is Invalid!";
+                    var responseData = ((List<Entity.BulkUploadResponse>)result.Data);
+                    responseData.Where(t => !Regex.IsMatch(t.kitCode.Trim(), SpecialCharRegex)).AsEnumerable().All(x => { x.hardwareKitError = "Invalid KitCode"; return true; });
+                    responseData.Where(t => !Regex.IsMatch(t.uniqueId.Trim(), UniqueIDSpecialCharRegex)).AsEnumerable().All(x => { x.hardwareKitError = "Invalid UniqueId"; return true; });
 
+                    responseData.Where(t => string.IsNullOrEmpty(t.kitCode.Trim()) && string.IsNullOrEmpty(t.hardwareKitError)).AsEnumerable().All(x => { x.hardwareKitError = "Invalid KitCode"; return true; });
+                    responseData.Where(t => string.IsNullOrEmpty(t.uniqueId.Trim()) && string.IsNullOrEmpty(t.hardwareKitError)).AsEnumerable().All(x => { x.hardwareKitError = "Invalid UniqueId"; return true; });
+                    responseData.Where(t => string.IsNullOrEmpty(t.name.Trim()) && string.IsNullOrEmpty(t.hardwareKitError)).AsEnumerable().All(x => { x.hardwareKitError = "Invalid Name"; response.Message = "KitCode or UniqueID or Name is Invalid!"; return true; });
+                    result.Data = responseData;
+                }
                 response.Data = result.Data;
-
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.BulkUploadResponse>>(false, ex.Message);
             }
             return response;
@@ -203,6 +244,8 @@ namespace iot.solution.host.Controllers
             Entity.ActionStatus result = new Entity.ActionStatus();
             try
             {
+                request.HardwareKits = request.HardwareKits.Where(t => !string.IsNullOrEmpty(t.KitCode.Trim()) && !string.IsNullOrEmpty(t.UniqueId.Trim()) && !string.IsNullOrEmpty(t.Name.Trim())).ToList();
+                request.HardwareKits = request.HardwareKits.Where(t => Regex.IsMatch(t.KitCode.Trim(), SpecialCharRegex) && Regex.IsMatch(t.UniqueId.Trim(), UniqueIDSpecialCharRegex)).ToList();
                 result = _service.UploadKit(request);
                 if (result.Success)
                     response.IsSuccess = true;
@@ -216,6 +259,7 @@ namespace iot.solution.host.Controllers
             }
             catch (Exception ex)
             {
+                base.LogException(ex);
                 return new Entity.BaseResponse<List<Entity.BulkUploadResponse>>(false, ex.Message);
             }
             return response;

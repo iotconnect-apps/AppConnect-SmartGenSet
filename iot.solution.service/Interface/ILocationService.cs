@@ -15,6 +15,8 @@ namespace iot.solution.service.Interface
         Entity.ActionStatus UpdateStatus(Guid id, bool status);
 
         Response.LocationDetailResponse GetLocationDetail(Guid locationId);
-        
+        Entity.BaseResponse<Entity.LocationStaticsResponse> GetLocationStatics(Guid locationId);
+
+
     }
 }

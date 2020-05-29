@@ -11,6 +11,8 @@ using System.Linq;
 using Entity = iot.solution.entity;
 using IOT = IoTConnect.Model;
 using Model = iot.solution.model.Models;
+using LogHandler = component.services.loghandler;
+using System.Reflection;
 
 namespace iot.solution.service.Data
 {
@@ -18,10 +20,10 @@ namespace iot.solution.service.Data
     {
 
         private readonly IUserRepository _userRepository;
-        private readonly ILogger _logger;
+        private readonly LogHandler.Logger _logger;
         private readonly IotConnectClient _iotConnectClient;
 
-        public UserService(IUserRepository userRepository, ILogger logManager)
+        public UserService(IUserRepository userRepository, LogHandler.Logger logManager)
         {
             _logger = logManager;
             _userRepository = userRepository;
@@ -35,7 +37,7 @@ namespace iot.solution.service.Data
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, $"UserService.GetAll, Error: {ex.Message}");
+                _logger.ErrorLog(ex, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                 return null;
             }
         }
@@ -47,7 +49,7 @@ namespace iot.solution.service.Data
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, $"UserService.Get, Error: {ex.Message}");
+                _logger.ErrorLog(ex, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                 return null;
             }
         }
@@ -64,7 +66,7 @@ namespace iot.solution.service.Data
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, $"UserService.List, Error: {ex.Message}");
+                _logger.ErrorLog(ex, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                 return new Entity.SearchResult<List<Entity.UserResponse>>();
             }
         }
@@ -86,7 +88,7 @@ namespace iot.solution.service.Data
                         dbUser.Guid = request.Id;
                         dbUser.CreatedDate = DateTime.Now;
                         dbUser.CompanyGuid = component.helper.SolutionConfiguration.CompanyId;
-                       dbUser.GensetGuid = request.EntityGuid.Value;
+                        dbUser.GensetGuid = request.EntityGuid.Value;
                         dbUser.CreatedBy = component.helper.SolutionConfiguration.CurrentUserId;
                         dbUser.IsActive = true;
                         dbUser.IsDeleted = false;
@@ -110,11 +112,11 @@ namespace iot.solution.service.Data
                         actionStatus.Data = Mapper.Configuration.Mapper.Map<Model.User, Entity.UserResponse>(actionStatus.Data);
                         if (!actionStatus.Success)
                         {
-                            _logger.Error($"User is not added in solution database, Error: {actionStatus.Message}");
+                            _logger.ErrorLog(new Exception($"User is not added in solution database, Error: {actionStatus.Message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                             var deleteEntityResult = _iotConnectClient.User.Delete(request.Id.ToString()).Result;
                             if (deleteEntityResult != null && !deleteEntityResult.status)
                             {
-                                _logger.Error($"User is not deleted from iotconnect, Error: {deleteEntityResult.message}");
+                                _logger.ErrorLog(new Exception($"User is not deleted from iotconnect, Error: {actionStatus.Message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                                 actionStatus.Success = false;
                                 actionStatus.Message = new UtilityHelper().IOTResultMessage(deleteEntityResult.errorMessages);
                             }
@@ -122,7 +124,7 @@ namespace iot.solution.service.Data
                     }
                     else
                     {
-                        _logger.Error($"User is not added in iotconnect, Error: {addUserResult.message}");
+                        _logger.ErrorLog(new Exception($"User is not added in iotconnect, Error: {actionStatus.Message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                         actionStatus.Success = false;
                         actionStatus.Message = new UtilityHelper().IOTResultMessage(addUserResult.errorMessages);
                     }
@@ -151,7 +153,7 @@ namespace iot.solution.service.Data
                            _iotConnectClient.User.UpdateUserStatus(request.Id.ToString(), request.IsActive));
                             if (updateStatusEntityResult != null && updateStatusEntityResult.status && updateStatusEntityResult.data != null && updateStatusEntityResult.errorMessages.Count > 0)
                             {
-                                _logger.Error($"User is not updated in iotconnect, Error: {updateStatusEntityResult.message}");
+                                _logger.ErrorLog(new Exception($"User is not updated in iotconnect, Error: {updateStatusEntityResult.errorMessages}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                                 actionStatus.Success = false;
                                 actionStatus.Message = new UtilityHelper().IOTResultMessage(updateStatusEntityResult.errorMessages);
                                 return actionStatus;
@@ -171,14 +173,14 @@ namespace iot.solution.service.Data
                         actionStatus.Data = Mapper.Configuration.Mapper.Map<Model.User, Entity.UserResponse>(actionStatus.Data);
                         if (!actionStatus.Success)
                         {
-                            _logger.Error($"User is not updated in solution database, Error: {actionStatus.Message}");
+                            _logger.ErrorLog(new Exception($"User is not updated in solution database, Error: {actionStatus.Message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                             actionStatus.Success = false;
                             actionStatus.Message = "Somthing went wrong!";
                         }
                     }
                     else
                     {
-                        _logger.Error($"User is not added in iotconnect, Error: {updateEntityResult.message}");
+                        _logger.ErrorLog(new Exception($"User is not added in iotconnect, Error: {updateEntityResult.message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                         actionStatus.Success = false;
                         actionStatus.Message = new UtilityHelper().IOTResultMessage(updateEntityResult.errorMessages);
                     }
@@ -187,7 +189,7 @@ namespace iot.solution.service.Data
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "UserManager.Delete " + ex);
+                _logger.ErrorLog(ex, "UserManager.Delete " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
@@ -213,18 +215,18 @@ namespace iot.solution.service.Data
                     actionStatus = _userRepository.Update(dbUser);
                     actionStatus.Data = Mapper.Configuration.Mapper.Map<Model.User, Entity.User>(actionStatus.Data);
                     if (!actionStatus.Success)
-                        _logger.Error($"User is not deleted in solution database, Error: {actionStatus.Message}");
+                    _logger.ErrorLog(new Exception($"User is not deleted in solution database, Error: {actionStatus.Message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                 }
                 else
                 {
-                    _logger.Error($"User is not deleted from iotconnect, Error: {deleteEntityResult.message}");
+                    _logger.ErrorLog(new Exception($"User is not deleted from iotconnect, Error: {deleteEntityResult.message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                     actionStatus.Success = false;
                     actionStatus.Message = new UtilityHelper().IOTResultMessage(deleteEntityResult.errorMessages);  // //  IOTResultMessage  ; //"Something Went Wrong!";
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "UserManager.Delete " + ex);
+                _logger.ErrorLog(ex, "UserManager.Delete " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
@@ -253,7 +255,7 @@ namespace iot.solution.service.Data
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "UserManager.InsertUser " + ex);
+                _logger.ErrorLog(ex, "UserManager.InsertUser " + ex);
                 return new Entity.ActionStatus
                 {
                     Success = false,
@@ -280,11 +282,14 @@ namespace iot.solution.service.Data
                     var tokenS = hand.ReadJwtToken(loginResult.data.access_token);
                     var jsonValue = tokenS.Claims?.SingleOrDefault(p => p.Type == "user")?.Value;
                     Entity.UserDetail userDetail = Newtonsoft.Json.JsonConvert.DeserializeObject<Entity.UserDetail>(jsonValue);
-                    var user = _userRepository.GetByUniqueId(r => r.Guid == Guid.Parse(userDetail.Id));
-                    if (user != null)
+                    var user = _userRepository.GetByUniqueId(r => r.Guid == Guid.Parse(userDetail.Id));                    
+                    
+                    if (user == null)
                     {
-                        userDetail.FullName = user.FirstName.ToString() + " " + user.LastName.ToString();
+                        return new Entity.ActionStatus() { Success = false, Message = "User does not exist in Solution" };
                     }
+                    userDetail.FullName = user.FirstName.ToString() + " " + user.LastName.ToString();
+
                     result.Data = new Entity.LoginResponse
                     {
                         status = loginResult.data.status,
@@ -305,7 +310,7 @@ namespace iot.solution.service.Data
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, $"UserManager.Login {ex.Message}");
+                _logger.ErrorLog(ex, $"UserManager.Login {ex.Message}");
                 return new Entity.ActionStatus(false, ex.Message);
             }
             return result;
@@ -329,7 +334,7 @@ namespace iot.solution.service.Data
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "UserManager.ValidateUser " + ex);
+                _logger.ErrorLog(ex, "UserManager.ValidateUser " + ex);
                 return null;
             }
         }
@@ -355,21 +360,21 @@ namespace iot.solution.service.Data
                     }
                     else
                     {
-                        _logger.Error($"User status is not updated in iotconnect, Error: {updateUserStatusResult.message}");
+                        _logger.ErrorLog(new Exception($"User status is not updated in iotconnect, Error: {updateUserStatusResult.message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                         actionStatus.Success = false;
                         actionStatus.Message = new UtilityHelper().IOTResultMessage(updateUserStatusResult.errorMessages);//"Something Went Wrong!";
                     }
                 }
                 catch (IoTConnectException ex)
                 {
-                    _logger.Error(Constants.ACTION_EXCEPTION, "UserManager.Delete " + ex);
+                    _logger.ErrorLog(ex, "UserManager.Delete " + ex);
                     actionStatus.Success = false;
                     actionStatus.Message = ex.Message;
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.ACTION_EXCEPTION, "UserManager.Delete " + ex);
+                _logger.ErrorLog(ex, "UserManager.Delete " + ex);
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }

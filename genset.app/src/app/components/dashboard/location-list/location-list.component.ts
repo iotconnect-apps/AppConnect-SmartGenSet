@@ -74,7 +74,7 @@ export class LocationListComponent implements OnInit {
 	}
 
 	clickAdd() {
-		this.router.navigate(['/location/add']);
+		this.router.navigate(['/locations/add']);
 	}
 
 

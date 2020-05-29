@@ -41,7 +41,7 @@ namespace host.iot.solution.Controllers
             }
             catch (Exception ex)
             {
-                //base.LogException(ex);
+                base.LogException(ex);
                 return new Entity.BaseResponse<Response.ConfgurationResponse>(false, ex.Message);
             }
             return response;
